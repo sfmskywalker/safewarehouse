@@ -1,0 +1,20 @@
+{
+  "scripts": {
+    "styles:prod": "cross-env NODE_ENV=production postcss tailwind.css -o wwwroot/styles.css",
+    "styles:dev": "cross-env NODE_ENV=development postcss tailwind.css -o wwwroot/styles.css",
+    "build": "copy node_modules\\alpinejs\\dist\\alpine.js wwwroot\\js\\ && copy node_modules\\idb\\build\\iife\\index-min.js wwwroot\\js\\idb.js"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.2.1",
+    "@tailwindcss/typography": "^0.4.0",
+    "alpinejs": "^2.8.0",
+    "autoprefixer": "^10.2.3",
+    "idb": "^6.0.0",
+    "postcss": "^8.2.4",
+    "postcss-cli": "^8.3.1",
+    "tailwindcss": "^2.0.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
