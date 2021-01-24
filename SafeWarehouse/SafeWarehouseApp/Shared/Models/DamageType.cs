@@ -2,5 +2,6 @@
 {
     public sealed class DamageType : Document
     {
+        public string Title { get; set; } = default!;
     }
 }

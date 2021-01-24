@@ -45,7 +45,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task OnNextButtonClick()
         {
-            if (Report.File == null)
+            if (Report.File.FileName == null!)
                 return;
             
             await DbContext.Reports.PutAsync(Report);
