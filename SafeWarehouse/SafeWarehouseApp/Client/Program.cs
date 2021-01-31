@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using Blazored.Modal;
 using SafeWarehouseApp.Client.Services;
 
 namespace SafeWarehouseApp.Client
@@ -22,6 +24,9 @@ namespace SafeWarehouseApp.Client
 
             services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             services.AddScoped<SafeWarehouseContext>();
+            services.AddBlazoredModal();
+            services.AddAutoMapper(x => x.AddMaps(typeof(Program)));
+            services.AddSingleton<Cloner>();
 
             await builder.Build().RunAsync();
         }

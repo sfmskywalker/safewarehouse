@@ -7,6 +7,7 @@ namespace SafeWarehouseApp.Shared.Models
         public int Number { get; set; }
         public string Title { get; set; } = default!;
         public string? Description { get; set; }
+        public string? Location { get; set; }
         public string? DamageTypeId { get; set; } = default!;
         public string? MaterialId { get; set; }
         public int? MaterialQuantity { get; set; }

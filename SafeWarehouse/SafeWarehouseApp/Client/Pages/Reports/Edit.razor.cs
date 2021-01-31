@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazored.Modal;
+using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using SafeWarehouseApp.Client.Services;
@@ -14,6 +16,8 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         [Parameter] public string Id { private get; set; } = default!;
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
         [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] private IModalService ModalService { get; set; } = default!;
+        [Inject] private Cloner Cloner { get; set; } = default!;
         private Report Report { get; set; } = new();
         private bool HasRendered { get; set; }
         private IDictionary<string, DamageType> DamageTypes { get; set; } = new Dictionary<string, DamageType>();
@@ -68,18 +72,32 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task OnAddDamageClick()
         {
-            Report.Damages.Add(new Damage
+            var damage = new Damage
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Number = Report.Damages.Count + 1,
-                Left = 100,
-                Top = 100,
-                Width = 50,
-                Height = 50,
-                Title = "Nieuwe Schade"
-            });
+                Left = 150,
+                Top = 150,
+                Width = 100,
+                Height = 100
+            };
 
+            var modalParameters = new ModalParameters();
+            modalParameters.Add(nameof(DamageModal.Damage), damage);
+            var reference = ModalService.Show<DamageModal>("Nieuwe schade", modalParameters);
+            var result = await reference.Result;
+
+            if (result.Cancelled)
+                return;
+
+            damage = (Damage) result.Data;
+            Report.Damages.Add(damage);
             await SaveChangesAsync();
+        }
+
+        private async Task OnEditDamageClick(Damage damage)
+        {
+            var clone = Cloner.Clone(damage);
         }
 
         private async Task OnDeleteDamageClick(Damage damage)

@@ -1,5 +1,7 @@
 using System;
 using System.Net.Http;
+using AutoMapper;
+using Blazored.Modal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,12 +26,14 @@ namespace SafeWarehouseApp.Server
         {
             services.AddControllersWithViews();
             services.AddRazorPages();
-
+            services.AddScoped(sp => new HttpClient {BaseAddress = new Uri("https://localhost:5001")});
+            services.AddScoped<SafeWarehouseContext>();
+            services.AddBlazoredModal();
+            services.AddAutoMapper(x => x.AddMaps(typeof(Program)));
+            services.AddSingleton<Cloner>();
+            
             if (Program.HostingModel == BlazorHostingModel.Server)
             {
-                services.AddScoped(sp => new HttpClient {BaseAddress = new Uri("https://localhost:5001")});
-                services.AddScoped<SafeWarehouseContext>();
-
                 services.AddServerSideBlazor(options =>
                 {
                     options.DetailedErrors = !Environment.IsProduction();
