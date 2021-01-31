@@ -98,6 +98,17 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private async Task OnEditDamageClick(Damage damage)
         {
             var clone = Cloner.Clone(damage);
+            var modalParameters = new ModalParameters();
+            modalParameters.Add(nameof(DamageModal.Damage), clone);
+            var reference = ModalService.Show<DamageModal>("Bewerk schade", modalParameters);
+            var result = await reference.Result;
+
+            if (result.Cancelled)
+                return;
+
+            clone = (Damage) result.Data;
+            Cloner.Update(damage, clone);
+            await SaveChangesAsync();
         }
 
         private async Task OnDeleteDamageClick(Damage damage)
