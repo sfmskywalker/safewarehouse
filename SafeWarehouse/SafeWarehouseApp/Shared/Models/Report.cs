@@ -8,7 +8,11 @@ namespace SafeWarehouseApp.Shared.Models
         public string Title { get; set; } = default!;
         public string? Location { get; set; }
         public DateTime Date { get; set; }
-        public File File { get; set; } = new();
+        public string? City { get; set; }
+        public string? Remarks { get; set; }
+        public File Schematic { get; set; } = new();
+        public File? Photo { get; set; }
         public ICollection<Damage> Damages { get; set; } = new List<Damage>();
+        
     }
 }

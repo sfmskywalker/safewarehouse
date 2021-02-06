@@ -15,13 +15,13 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private Report Report { get; } = CreateReport();
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
-        private string? SelectedImageUrl => Report.File?.GetImageDataUrl();
+        private string? SelectedImageUrl => Report.Schematic.GetImageDataUrl();
 
         private async Task OnFileChanged(InputFileChangeEventArgs e)
         {
             var resizedImage = await e.File.RequestImageFileAsync(e.File.ContentType, 1024, 1024);
 
-            Report.File = new File
+            Report.Schematic = new File
             {
                 Data = await resizedImage.ReadStreamAsync(),
                 ContentType = e.File.ContentType,
@@ -38,7 +38,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task OnNextButtonClick()
         {
-            if (Report.File.FileName == null!)
+            if (Report.Schematic.FileName == null!)
                 return;
             
             await DbContext.Reports.PutAsync(Report);

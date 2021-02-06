@@ -61,7 +61,12 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         
         private void OnValidDetailSubmit()
         {
-            Damage.Details.Add(CurrentDamageDetail);
+            if(CurrentDamageDetail.Id == null!)
+            {
+                CurrentDamageDetail.Id = Guid.NewGuid().ToString("N");
+                Damage.Details.Add(CurrentDamageDetail);
+            }
+            
             ShowDamageDetailForm = false;
         }
         

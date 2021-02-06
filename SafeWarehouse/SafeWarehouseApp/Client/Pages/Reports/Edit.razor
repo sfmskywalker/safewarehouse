@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Web
-@page "/report/{id}"
+﻿@page "/report/{id}"
 <div class="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-gray-200">
     <MobileMenuButton/>
     <div class="flex-1 px-4 flex justify-between">
@@ -22,50 +21,145 @@
                     <!-- Tabs -->
                     <div class="lg:hidden">
                         <label for="selected-tab" class="sr-only">Selecteer een onderdeel</label>
-                        <select id="selected-tab" name="selected-tab" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
-                            <option selected="">Plattegrond</option>
-                            <option>Rapport</option>
+                        <select @onchange="@(e => ChangeTab((string) e.Value!))" id="selected-tab" name="selected-tab" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
+                            <option selected="" value="Designer">Plattegrond</option>
+                            <option value="General">Algemeen</option>
+                            <option value="Meta">Metagegevens</option>
                         </select>
                     </div>
                     <div class="hidden lg:block">
                         <div class="border-b border-gray-200">
                             <nav class="-mb-px flex">
                                 <!-- Current: "border-pink-500 text-pink-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
-                                <a href="#" class="border-pink-500 text-pink-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                @{
+                                    const string currentTabClass = "border-pink-500 text-pink-600";
+                                    const string defaultTabClass = "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700";
+                                }
+                                <a href="#" @onclick="@(() => ChangeTab("Designer"))" @onclick:preventDefault class="@(CurrentTab == "Designer" ? currentTabClass : defaultTabClass) whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                                     Plattegrond
                                 </a>
-                                <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap ml-8 py-4 px-1 border-b-2 font-medium text-sm">
-                                    Rapport
+                                <a href="#" @onclick="@(() => ChangeTab("General"))" @onclick:preventDefault class="@(CurrentTab == "General" ? currentTabClass : defaultTabClass) whitespace-nowrap ml-8 py-4 px-1 border-b-2 font-medium text-sm">
+                                    Algemeen
+                                </a>
+                                <a href="#" @onclick="@(() => ChangeTab("Meta"))" @onclick:preventDefault class="@(CurrentTab == "Meta" ? currentTabClass : defaultTabClass) whitespace-nowrap ml-8 py-4 px-1 border-b-2 font-medium text-sm">
+                                    Metagegevens
                                 </a>
                             </nav>
                         </div>
                     </div>
 
-                    <div class="py-8 xl:py-10">
-                        <div class="xl:grid xl:grid-cols-3">
-                            <div class="xl:col-span-2 xl:pr-8 xl:border-r xl:border-gray-200">
-                                <div>
+                    @if (CurrentTab == "Designer")
+                    {
+                        <div class="py-8 xl:py-10">
+                            <div class="xl:grid xl:grid-cols-3">
+                                <div class="xl:col-span-2 xl:pr-8 xl:border-r xl:border-gray-200">
                                     <div>
-                                        <div @ondblclick="OnCanvasDoubleClick" @ontouchend="OnTouchEnd" class="design-canvas relative overflow-auto">
-                                            <img src="@Report.File.GetImageDataUrl()" alt="" class="select-none"/>
-                                            @foreach (var damage in Report.Damages)
-                                            {
-                                                <div @ondblclick="@(e => OnEditDamageClick(damage))" @ondblclick:stopPropagation="true" class="damage flex flex-col justify-center" style="left: @(damage.Left)px; top: @(damage.Top)px; width: @(damage.Width)px; height: @(damage.Height)px;" data-damage-id="@damage.Id">
-                                                    <span class="text-2xl font-semibold text-pink-500 text-center">@damage.Number</span>
-                                                </div>
-                                            }
+                                        <div>
+                                            <div @ondblclick="OnCanvasDoubleClick" @ontouchend="OnTouchEnd" class="design-canvas relative overflow-auto">
+                                                <img src="@Report.Schematic.GetImageDataUrl()" alt="" class="select-none"/>
+                                                @foreach (var damage in Report.Damages)
+                                                {
+                                                    <div @ondblclick="@(e => OnEditDamageClick(damage))" @ondblclick:stopPropagation="true" class="damage flex flex-col justify-center" style="left: @(damage.Left)px; top: @(damage.Top)px; width: @(damage.Width)px; height: @(damage.Height)px;" data-damage-id="@damage.Id">
+                                                        <span class="text-2xl font-semibold text-pink-500 text-center">@damage.Number</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <aside class="mt-8 xl:hidden">
+                                                @DisplayDamages()
+                                            </aside>
                                         </div>
-                                        <aside class="mt-8 xl:hidden">
-                                            @DisplayDamages()
-                                        </aside>
                                     </div>
                                 </div>
+                                <aside class="hidden xl:block xl:pl-8">
+                                    @DisplayDamages()
+                                </aside>
                             </div>
-                            <aside class="hidden xl:block xl:pl-8">
-                                @DisplayDamages()
-                            </aside>
                         </div>
-                    </div>
+                    }
+                    else if (CurrentTab == "General")
+                    {
+                        <div class="py-8 xl:py-10">
+                            <EditForm EditContext="ReportContext" class="space-y-6">
+                                <div class="mt-3 sm:mt-0 sm:ml-4">
+                                    <div class="space-y-6">
+                                        <div>
+                                            <label for="location" class="block mb-1 text-sm font-medium text-gray-700">
+                                                Titel
+                                            </label>
+                                            <InputText @bind-Value="Report.Title" id="location" type="text" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"/>
+                                        </div>
+                                        <div>
+                                            <label for="location" class="block mb-1 text-sm font-medium text-gray-700">
+                                                Opmerkingen
+                                            </label>
+                                            <InputTextArea @bind-Value="Report.Remarks" id="location" cols="3" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"/>
+                                        </div>
+                                        <div>
+                                            @if (Report.Photo != null)
+                                            {
+                                                <div class="mb-2">
+                                                    <img src="@Report.Photo.GetImageDataUrl()" alt=""/>
+                                                </div>
+                                            }
+                                            <div>
+                                                <label class="block mb-1 text-sm font-medium text-gray-700">
+                                                    Foto
+                                                </label>
+                                                <div class="relative flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                                    <div class="space-y-1 text-center">
+                                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                        </svg>
+                                                        <div class="flex text-sm text-gray-600">
+                                                            <label for="file-upload" class="cursor-pointer bg-white rounded-md font-medium text-pink-600 hover:text-pink-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-pink-500">
+                                                                <span>Upload een afbeelding</span>
+                                                                <InputFile OnChange="@OnGeneralPhotoChanged" id="file-upload" class="absolute opacity-0 w-full h-full top-0 left-0"/>
+                                                            </label>
+                                                            <p class="pl-1">of sleep naar hier</p>
+                                                        </div>
+                                                        <p class="text-xs text-gray-500">
+                                                            PNG, JPG, GIF tot 100MB
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    }
+                    else if (CurrentTab == "Meta")
+                    {
+                        <div class="py-8 xl:py-10">
+                            <EditForm EditContext="ReportContext" class="space-y-6">
+                                <div class="mt-3 sm:mt-0 sm:ml-4">
+                                    <div class="space-y-6">
+                                        <div>
+                                            <label for="location" class="block mb-1 text-sm font-medium text-gray-700">
+                                                Locatie
+                                            </label>
+                                            <InputText @bind-Value="Report.Location" id="location" type="text" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"/>
+                                        </div>
+                                        <div>
+                                            <label for="title" class="block mb-1 text-sm font-medium text-gray-700">
+                                                Datum
+                                            </label>
+                                            <InputDate @bind-Value="Report.Date" id="title" type="date" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"/>
+                                        </div>
+                                        <div>
+                                            <label for="location" class="block mb-1 text-sm font-medium text-gray-700">
+                                                Plaats
+                                            </label>
+                                            <InputText @bind-Value="Report.City" id="location" type="text" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"/>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </EditForm>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

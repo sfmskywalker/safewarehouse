@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using SafeWarehouseApp.Client.Extensions;
 using SafeWarehouseApp.Client.Services;
 using SafeWarehouseApp.Shared.Models;
+using File = SafeWarehouseApp.Shared.Models.File;
 
 namespace SafeWarehouseApp.Client.Pages.Reports
 {
@@ -20,7 +24,9 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         [Inject] private IModalService ModalService { get; set; } = default!;
         [Inject] private Cloner Cloner { get; set; } = default!;
         private Report Report { get; set; } = new();
+        private EditContext ReportContext { get; set; } = default!;
         private bool HasRendered { get; set; }
+        private string CurrentTab { get; set; } = "Designer";
         private IDictionary<string, DamageType> DamageTypes { get; set; } = new Dictionary<string, DamageType>();
         private IJSObjectReference DesignerModule { get; set; } = default!;
         private static Func<string, int, int, int, int, Task> _updateDamageSpriteAsync = default!;
@@ -30,25 +36,42 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         protected override void OnInitialized()
         {
+            SetReport(Report);
             _updateDamageSpriteAsync = UpdateDamageSpriteAsync;
         }
 
         protected override async Task OnParametersSetAsync()
         {
-            if (HasRendered)
-                Report = await DbContext.Reports.GetAsync(Id);
+            if (HasRendered) 
+                await LoadReportAsync(Id);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                Report = await DbContext.Reports.GetAsync(Id);
+                await LoadReportAsync(Id);
                 DamageTypes = (await DbContext.DamageTypes.GetAllAsync()).ToDictionary(x => x.Id);
                 await InitializeDesignerAsync();
                 HasRendered = true;
                 StateHasChanged();
             }
+        }
+
+        private async Task LoadReportAsync(string id)
+        {
+            var report = await DbContext.Reports.GetAsync(id);
+            SetReport(report);
+        }
+        
+        private void SetReport(Report report)
+        {
+            if(ReportContext != null!)
+                ReportContext.OnFieldChanged -= OnReportFieldChanged;
+            
+            ReportContext = new EditContext(report);
+            ReportContext.OnFieldChanged += OnReportFieldChanged;
+            Report = report;
         }
 
         private async Task InitializeDesignerAsync()
@@ -94,6 +117,11 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             damage = (Damage) result.Data;
             Report.Damages.Add(damage);
             await SaveChangesAsync();
+        }
+
+        private void ChangeTab(string tab)
+        {
+            CurrentTab = tab;
         }
 
         private async Task OnCanvasDoubleClick(MouseEventArgs args)
@@ -142,5 +170,20 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
             await SaveChangesAsync();
         }
+        
+        private async void OnReportFieldChanged(object? sender, FieldChangedEventArgs e) => await SaveChangesAsync();
+
+        private async Task OnGeneralPhotoChanged(InputFileChangeEventArgs args)
+        {
+            var resizedImage = await args.File.RequestImageFileAsync(args.File.ContentType, 1024, 1024);
+
+            Report.Photo = new File
+            {
+                Data = await resizedImage.ReadStreamAsync(),
+                ContentType = args.File.ContentType,
+                FileName = Path.GetFileName(args.File.Name)
+            };
+        }
+
     }
 }
