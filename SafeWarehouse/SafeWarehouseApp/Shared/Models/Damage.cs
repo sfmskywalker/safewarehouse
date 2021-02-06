@@ -8,10 +8,10 @@ namespace SafeWarehouseApp.Shared.Models
         public string Title { get; set; } = default!;
         public string? Description { get; set; }
         public string? Location { get; set; }
-        public string? DamageTypeId { get; set; } = default!;
+        public string? DamageTypeId { get; set; }
         public string? MaterialId { get; set; }
         public int? MaterialQuantity { get; set; }
-        public ICollection<DamageDetail> Details = new List<DamageDetail>();
+        public ICollection<DamageDetail> Details { get; set; } = new List<DamageDetail>();
         public int Left { get; set; }
         public int Top { get; set; }
         public int Width { get; set; }
