@@ -46,11 +46,11 @@
                             <div class="xl:col-span-2 xl:pr-8 xl:border-r xl:border-gray-200">
                                 <div>
                                     <div>
-                                        <div class="design-canvas relative overflow-auto">
+                                        <div @ondblclick="OnCanvasDoubleClick" @ontouchend="OnTouchEnd" class="design-canvas relative overflow-auto">
                                             <img src="@Report.File.GetImageDataUrl()" alt="" class="select-none"/>
                                             @foreach (var damage in Report.Damages)
                                             {
-                                                <div class="damage flex flex-col justify-center" style="left: @(damage.Left)px; top: @(damage.Top)px; width: @(damage.Width)px; height: @(damage.Height)px;" data-damage-id="@damage.Id">
+                                                <div @ondblclick="@(e => OnEditDamageClick(damage))" @ondblclick:stopPropagation="true" class="damage flex flex-col justify-center" style="left: @(damage.Left)px; top: @(damage.Top)px; width: @(damage.Width)px; height: @(damage.Height)px;" data-damage-id="@damage.Id">
                                                     <span class="text-2xl font-semibold text-pink-500 text-center">@damage.Number</span>
                                                 </div>
                                             }
@@ -88,7 +88,7 @@
                                 var editDamageClickHandler = EventCallback.Factory.Create<MouseEventArgs>(this, () => OnEditDamageClick(damage));
                                 <li class="py-4">
                                     <div class="flex items-center space-x-4">
-                                        <a href="#" class="flex flex-1 items-center space-x-4">
+                                        <a href="#" @onclick="editDamageClickHandler" @onclick:preventDefault class="flex flex-1 items-center space-x-4">
                                             <div class="flex-shrink-0">
                                                 <div class="flex h-7 w-7 rounded-full bg-pink-500">
                                                     <span class="flex-1 text-2xl font-semibold text-white text-center">@damage.Number</span>

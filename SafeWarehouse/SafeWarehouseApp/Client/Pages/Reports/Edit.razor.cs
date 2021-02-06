@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SafeWarehouseApp.Client.Services;
 using SafeWarehouseApp.Shared.Models;
@@ -70,14 +71,14 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task SaveChangesAsync() => await DbContext.Reports.PutAsync(Report);
 
-        private async Task OnAddDamageClick()
+        private async Task BeginAddDamage(int left = 150, int top = 150)
         {
             var damage = new Damage
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Number = Report.Damages.Count + 1,
-                Left = 150,
-                Top = 150,
+                Left = left,
+                Top = top,
                 Width = 100,
                 Height = 100
             };
@@ -94,6 +95,25 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             Report.Damages.Add(damage);
             await SaveChangesAsync();
         }
+
+        private async Task OnCanvasDoubleClick(MouseEventArgs args)
+        {
+            await BeginAddDamage((int) (args.OffsetX - 50) , (int) (args.OffsetY - 50));
+        }
+
+        private DateTime _lastTap = DateTime.MinValue;
+        private async Task OnTouchEnd(TouchEventArgs args)
+        {
+            var now = DateTime.Now;
+            var delta = now - _lastTap;
+            
+            _lastTap = DateTime.Now;
+            
+            if (delta < TimeSpan.FromMilliseconds(600) && delta > TimeSpan.Zero) 
+                await BeginAddDamage((int) args.ChangedTouches[0].ClientX, (int) args.ChangedTouches[0].ClientY);
+        }
+
+        private Task OnAddDamageClick() => BeginAddDamage(); 
 
         private async Task OnEditDamageClick(Damage damage)
         {
