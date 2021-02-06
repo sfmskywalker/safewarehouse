@@ -42,7 +42,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
                 return;
             
             await DbContext.Reports.PutAsync(Report);
-            NavigationManager.NavigateTo($"report/{Report.Id}");
+            NavigationManager.NavigateTo($"reports/{Report.Id}");
         }
     }
 }
