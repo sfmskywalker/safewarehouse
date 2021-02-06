@@ -87,9 +87,12 @@
                                         <li>
                                             <div class="flex items-center px-4 py-4 sm:px-6">
                                                 <div class="min-w-0 flex-1 flex flex-cols items-center">
-                                                    <div class="flex-shrink-0">
-                                                        <img class="h-32 w-32 rounded" src="@detail.Picture.GetImageDataUrl()" alt="">
-                                                    </div>
+                                                    @if (detail.Picture != null)
+                                                    {
+                                                        <div class="flex-shrink-0">
+                                                            <img class="h-32 w-32 rounded" src="@detail.Picture.GetImageDataUrl()" alt="">
+                                                        </div>
+                                                    }
                                                     <div class="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4">
                                                         <div>
                                                             <p class="text-sm text-gray-900">

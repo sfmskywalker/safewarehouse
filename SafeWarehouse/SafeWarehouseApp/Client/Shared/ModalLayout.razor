@@ -35,7 +35,7 @@
     public RenderFragment? ChildContent { private get; set; }
 
     [CascadingParameter]
-    BlazoredModalInstance Modal { get; set; }
+    BlazoredModalInstance Modal { get; set; } = default!;
 
     async Task Cancel() => await Modal.CancelAsync();
 }
