@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using SafeWarehouseApp.Client.Extensions;
+using SafeWarehouseApp.Client.Services;
 using SafeWarehouseApp.Shared.Models;
 using File = SafeWarehouseApp.Shared.Models.File;
 
@@ -15,15 +18,28 @@ namespace SafeWarehouseApp.Client.Pages.Reports
     {
         [CascadingParameter] public BlazoredModalInstance Modal { get; set; } = default!;
         [Parameter] public Damage Damage { get; set; } = new();
+        [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
         private EditContext DamageContext { get; set; } = default!;
         private DamageDetail CurrentDamageDetail { get; set; } = new();
         private EditContext DamageDetailContext { get; set; } = default!;
         private bool ShowDamageDetailForm { get; set; }
+        private ICollection<Material> Materials { get; set; } = new List<Material>();
+        private ICollection<DamageType> DamageTypes { get; set; } = new List<DamageType>();
 
         protected override void OnInitialized()
         {
             DamageContext = new EditContext(Damage);
             DamageDetailContext = new EditContext(CurrentDamageDetail);
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                Materials = (await DbContext.Materials.GetAllAsync()).OrderBy(x => x.Name).ToList();
+                DamageTypes = (await DbContext.DamageTypes.GetAllAsync()).OrderBy(x => x.Title).ToList();
+                StateHasChanged();
+            }
         }
 
         private async Task Close() => await Modal.CloseAsync(ModalResult.Ok(true));

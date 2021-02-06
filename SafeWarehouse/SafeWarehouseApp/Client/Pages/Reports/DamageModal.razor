@@ -45,10 +45,12 @@
                             <label for="damageType" class="block mb-1 text-sm font-medium text-gray-700">
                                 Type schade
                             </label>
-                            <InputSelect @bind-Value="Damage.DamageTypeId" id="damageType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
-                                <option value="1">Vervangbaar</option>
-                                <option value="2">Afkeur</option>
-                            </InputSelect>
+                            <select @bind="Damage.DamageTypeId" id="damageType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
+                                @foreach (var damageType in DamageTypes)
+                                {
+                                    <option value="@damageType.Id">@damageType.Title</option>
+                                }
+                            </select>
                         </div>
                         <div>
 
@@ -57,12 +59,13 @@
                                     <label for="materialId" class="block mb-1 text-sm font-medium text-gray-700">
                                         Materiaal
                                     </label>
-                                    <InputSelect @bind-Value="Damage.MaterialId" id="materialId" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
-                                        <option value="1">Geen</option>
-                                        <option value="2">Hout</option>
-                                        <option value="3">Ijzer</option>
+                                    <select @bind="Damage.MaterialId" id="materialId" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
+                                        @foreach (var material in Materials)
+                                        {
+                                            <option value="@material.Id">@material.Name</option>    
+                                        }
                                         <option value="">Anders</option>
-                                    </InputSelect>
+                                    </select>
                                 </div>
 
                                 <div class="col-span-12 sm:col-span-6">

@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Components;
 using SafeWarehouseApp.Client.Services;
 using SafeWarehouseApp.Shared.Models;
 
-namespace SafeWarehouseApp.Client.Pages.Reports
+namespace SafeWarehouseApp.Client.Pages.DamageTypes
 {
     partial class List
     {
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
-        private ICollection<Report> Reports { get; set; } = new List<Report>();
+        private ICollection<DamageType> DamageTypes { get; set; } = new List<DamageType>();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -23,12 +23,12 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task FetchDataAsync()
         {
-            Reports = (await DbContext.Reports.GetAllAsync()).OrderBy(x => x.City).ThenBy(x => x.Location).ThenByDescending(x => x.Date).ToList();
+            DamageTypes = (await DbContext.DamageTypes.GetAllAsync()).OrderBy(x => x.Title).ToList();
         }
 
-        private async Task OnDeleteMenuItemClick(Report report)
+        private async Task OnDeleteMenuItemClick(DamageType damageType)
         {
-            await DbContext.Reports.DeleteAsync(report.Id);
+            await DbContext.DamageTypes.DeleteAsync(damageType.Id);
             await FetchDataAsync();
         }
     }

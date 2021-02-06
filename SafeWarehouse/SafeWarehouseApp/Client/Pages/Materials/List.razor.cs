@@ -23,12 +23,12 @@ namespace SafeWarehouseApp.Client.Pages.Materials
 
         private async Task FetchDataAsync()
         {
-            Materials = (await DbContext.Materials.GetAllAsync()).ToList();
+            Materials = (await DbContext.Materials.GetAllAsync()).OrderBy(x => x.Name).ToList();
         }
 
         private async Task OnDeleteMenuItemClick(Material material)
         {
-            await DbContext.Reports.DeleteAsync(material.Id);
+            await DbContext.Materials.DeleteAsync(material.Id);
             await FetchDataAsync();
         }
     }

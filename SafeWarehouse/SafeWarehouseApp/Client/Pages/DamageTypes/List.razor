@@ -1,4 +1,4 @@
-﻿@page "/materials"
+﻿@page "/damage-types"
 <div class="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-gray-200">
     <MobileMenuButton/>
     <div class="flex-1 px-4 flex justify-between">
@@ -16,8 +16,8 @@
             </form>
         </div>
         <div class="ml-4 flex items-center lg:ml-6">
-            <NavLink href="materials/create" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900">
-                Nieuw Materiaal
+            <NavLink href="damage-types/create" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900">
+                Nieuwe Schadesoort
             </NavLink>
         </div>
     </div>
@@ -27,19 +27,19 @@
     <div class="py-8 xl:py-10">
         <div class="mt-10 sm:hidden">
             <div class="px-4 sm:px-6">
-                <h2 class="text-gray-500 text-xs font-medium uppercase tracking-wide">Materialen</h2>
+                <h2 class="text-gray-500 text-xs font-medium uppercase tracking-wide">Schadesoorten</h2>
             </div>
             <ul class="mt-3 border-t border-gray-200 divide-y divide-gray-100" x-max="1">
 
-                @foreach (var material in Materials)
+                @foreach (var damageType in DamageTypes)
                 {
-                    var editUrl = $"materials/{material.Id}";
+                    var editUrl = $"damage-types/{damageType.Id}";
                     <li>
                         <a href="@editUrl" class="group flex items-center justify-between px-4 py-4 hover:bg-gray-50 sm:px-6">
                             <span class="flex items-center truncate space-x-3">
                                 <span class="w-2.5 h-2.5 flex-shrink-0 rounded-full bg-pink-600" aria-hidden="true"></span>
                                 <span class="font-medium truncate text-sm leading-6">
-                                    @material.Name
+                                    @damageType.Title
                                 </span>
                             </span>
                             <svg class="ml-4 h-5 w-5 text-gray-400 group-hover:text-gray-500" x-description="Heroicon name: chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -57,19 +57,19 @@
                     <thead>
                     <tr class="border-t border-gray-200">
                         <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span class="lg:pl-2">Materiaal</span>
+                            <span class="lg:pl-2">Schadesoort</span>
                         </th>
                         <th class="pr-6 py-3 border-b border-gray-200 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                     </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100" x-max="1">
-                    @foreach (var material in Materials)
+                    @foreach (var damageType in DamageTypes)
                     {
-                        var editUrl = $"materials/{material.Id}";
+                        var editUrl = $"damage-types/{damageType.Id}";
                         <tr>
                             <td class="px-6 py-3 max-w-0 w-full whitespace-nowrap text-sm font-medium text-gray-900">
                                 <a href="@editUrl" class="truncate hover:text-gray-600">
-                                    @material.Name
+                                    @damageType.Title
                                 </a>
                             </td>
                             
@@ -92,7 +92,7 @@
                                             </a>
                                         </div>
                                         <div class="py-1" role="none">
-                                            <a href="#" @onclick="@(() => OnDeleteMenuItemClick(material))" @onclick:preventDefault class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">
+                                            <a href="#" @onclick="@(() => OnDeleteMenuItemClick(damageType))" @onclick:preventDefault class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">
                                                 <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" x-description="Heroicon name: trash" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                     <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                                                 </svg>
