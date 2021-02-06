@@ -3,6 +3,8 @@
 Safe Warehouse is a Blazor PWA that I created for a good friend of mine who is in the business of consulting on warehouse safety protocols.
 The app helps them create reports when visiting warehouses while taking inventory of damages, if any.
 
+![Safe Warehouse demo](/docs/animation.gif)
+
 ## Functionality
 When creating a report, the app asks the user to upload a map of the warehouse or area to position damages on.
 A damage consists of basic information, such as a description, location, some images and required material to fix or replace the damage.
