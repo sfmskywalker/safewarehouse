@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SafeWarehouseApp.Shared.Extensions;
 
 namespace SafeWarehouseApp.Shared.Models
 {
@@ -12,7 +13,15 @@ namespace SafeWarehouseApp.Shared.Models
         public string? Remarks { get; set; }
         public File Schematic { get; set; } = new();
         public File? Photo { get; set; }
-        public ICollection<Damage> Damages { get; set; } = new List<Damage>();
-        
+        public IList<Location> Locations { get; set; } = new List<Location>();
+
+        public string GetLocationNotation(Location location)
+        {
+            var index = Locations.IndexOf(location);
+            var letter = Helpers.IntToLetters(index + 1);
+            var damageCount = location.Damages.Count;
+
+            return damageCount == 0 ? letter : $"{letter} ({damageCount})";
+        }
     }
 }

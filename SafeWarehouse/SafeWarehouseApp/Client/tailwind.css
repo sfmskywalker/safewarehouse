@@ -5,3 +5,13 @@
 #blazor-error-ui {
     display: none;
 }
+
+.validation-errors {
+    margin: 1rem;
+}
+
+.validation-errors .validation-message {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgba(220, 38, 38, 1);
+}

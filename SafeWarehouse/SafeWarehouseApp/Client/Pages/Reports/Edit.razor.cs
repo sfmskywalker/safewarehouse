@@ -42,7 +42,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         protected override async Task OnParametersSetAsync()
         {
-            if (HasRendered) 
+            if (HasRendered)
                 await LoadReportAsync(Id);
         }
 
@@ -63,12 +63,12 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             var report = await DbContext.Reports.GetAsync(id);
             SetReport(report);
         }
-        
+
         private void SetReport(Report report)
         {
-            if(ReportContext != null!)
+            if (ReportContext != null!)
                 ReportContext.OnFieldChanged -= OnReportFieldChanged;
-            
+
             ReportContext = new EditContext(report);
             ReportContext.OnFieldChanged += OnReportFieldChanged;
             Report = report;
@@ -82,7 +82,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task UpdateDamageSpriteAsync(string id, int left, int top, int width, int height)
         {
-            var damage = Report.Damages.First(x => x.Id == id);
+            var damage = Report.Locations.First(x => x.Id == id);
             damage.Left = left;
             damage.Top = top;
             damage.Width = width;
@@ -96,10 +96,10 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task BeginAddDamage(int left = 150, int top = 150)
         {
-            var damage = new Damage
+            var location = new Location
             {
                 Id = Guid.NewGuid().ToString("N"),
-                Number = Report.Damages.Count + 1,
+                Number = Report.Locations.Count + 1,
                 Left = left,
                 Top = top,
                 Width = 100,
@@ -107,15 +107,15 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             };
 
             var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(DamageModal.Damage), damage);
-            var reference = ModalService.Show<DamageModal>("Nieuwe schade", modalParameters);
+            modalParameters.Add(nameof(LocationModal.Location), location);
+            var reference = ModalService.Show<LocationModal>("Nieuwe locatie", modalParameters);
             var result = await reference.Result;
 
             if (result.Cancelled)
                 return;
 
-            damage = (Damage) result.Data;
-            Report.Damages.Add(damage);
+            location = (Location) result.Data;
+            Report.Locations.Add(location);
             await SaveChangesAsync();
         }
 
@@ -126,51 +126,57 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task OnCanvasDoubleClick(MouseEventArgs args)
         {
-            await BeginAddDamage((int) (args.OffsetX - 50) , (int) (args.OffsetY - 50));
+            await BeginAddDamage((int) (args.OffsetX - 50), (int) (args.OffsetY - 50));
         }
 
         private DateTime _lastTap = DateTime.MinValue;
+
         private async Task OnTouchEnd(TouchEventArgs args)
         {
             var now = DateTime.Now;
             var delta = now - _lastTap;
-            
+
             _lastTap = DateTime.Now;
-            
-            if (delta < TimeSpan.FromMilliseconds(600) && delta > TimeSpan.Zero) 
+
+            if (delta < TimeSpan.FromMilliseconds(600) && delta > TimeSpan.Zero)
                 await BeginAddDamage((int) args.ChangedTouches[0].ClientX, (int) args.ChangedTouches[0].ClientY);
         }
 
-        private Task OnAddDamageClick() => BeginAddDamage(); 
+        private Task OnAddDamageClick() => BeginAddDamage();
 
-        private async Task OnEditDamageClick(Damage damage)
+        private async Task OnEditLocationClick(Location location)
         {
-            var clone = Cloner.Clone(damage);
+            var clone = Cloner.Clone(location);
             var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(DamageModal.Damage), clone);
-            var reference = ModalService.Show<DamageModal>("Bewerk schade", modalParameters);
+            modalParameters.Add(nameof(LocationModal.Location), clone);
+            var reference = ModalService.Show<LocationModal>("Bewerk locatie", modalParameters);
             var result = await reference.Result;
 
             if (result.Cancelled)
                 return;
 
-            clone = (Damage) result.Data;
-            Cloner.Update(damage, clone);
+            clone = (Location?) result.Data;
+
+            if (clone == null)
+                Report.Locations.Remove(location);
+            else
+                Cloner.Update(clone, location);
+            
             await SaveChangesAsync();
         }
 
-        private async Task OnDeleteDamageClick(Damage damage)
+        private async Task OnDeleteLocationClick(Location location)
         {
-            Report.Damages.Remove(damage);
+            Report.Locations.Remove(location);
 
             var index = 0;
 
-            foreach (var d in Report.Damages)
+            foreach (var d in Report.Locations)
                 d.Number = ++index;
 
             await SaveChangesAsync();
         }
-        
+
         private async void OnReportFieldChanged(object? sender, FieldChangedEventArgs e) => await SaveChangesAsync();
 
         private async Task OnGeneralPhotoChanged(InputFileChangeEventArgs args)
@@ -184,6 +190,5 @@ namespace SafeWarehouseApp.Client.Pages.Reports
                 FileName = Path.GetFileName(args.File.Name)
             };
         }
-
     }
 }

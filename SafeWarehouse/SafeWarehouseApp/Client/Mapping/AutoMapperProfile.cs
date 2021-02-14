@@ -7,7 +7,7 @@ namespace SafeWarehouseApp.Client.Mapping
     {
         public AutoMapperProfile()
         {
-            CreateMap<Damage, Damage>();
+            CreateMap<Location, Location>();
         }
     }
 }

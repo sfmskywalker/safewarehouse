@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.Modal.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using SafeWarehouseApp.Client.Extensions;
 using SafeWarehouseApp.Client.Services;
 using SafeWarehouseApp.Shared.Models;
-using File = SafeWarehouseApp.Shared.Models.File;
 
 namespace SafeWarehouseApp.Client.Pages.Reports
 {
@@ -19,17 +15,15 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         [CascadingParameter] public BlazoredModalInstance Modal { get; set; } = default!;
         [Parameter] public Damage Damage { get; set; } = new();
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
+        [Inject] private IModalService ModalService { get; set; } = default!;
+        [Inject] private Cloner Cloner { get; set; } = default!;
         private EditContext DamageContext { get; set; } = default!;
-        private DamageDetail CurrentDamageDetail { get; set; } = new();
-        private EditContext DamageDetailContext { get; set; } = default!;
-        private bool ShowDamageDetailForm { get; set; }
         private ICollection<Material> Materials { get; set; } = new List<Material>();
         private ICollection<DamageType> DamageTypes { get; set; } = new List<DamageType>();
 
         protected override void OnInitialized()
         {
             DamageContext = new EditContext(Damage);
-            DamageDetailContext = new EditContext(CurrentDamageDetail);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -49,53 +43,41 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         {
             await Modal.CloseAsync(ModalResult.Ok(Damage));
         }
-
-        private void OnEditDamageDetailClick(DamageDetail damageDetail)
+        
+        private async Task OnAddPictureClick()
         {
-            CurrentDamageDetail = damageDetail;
-            DamageDetailContext = new EditContext(CurrentDamageDetail);
-            ShowDamageDetailForm = true;
+            var damagePicture = new DamagePicture();
+            var modalParameters = new ModalParameters();
+            modalParameters.Add(nameof(DamagePictureModal.DamagePicture), damagePicture);
+            var reference = ModalService.Show<DamagePictureModal>("Nieuwe schade foto", modalParameters);
+            var result = await reference.Result;
+
+            if (result.Cancelled)
+                return;
+
+            damagePicture = (DamagePicture) result.Data;
+            Damage.Pictures.Add(damagePicture);
         }
         
-        private void OnDeleteDamageDetailClick(DamageDetail damageDetail)
+        private async Task OnEditPictureClick(DamagePicture damagePicture)
         {
-            Damage.Details.Remove(damageDetail);
+            var clone = Cloner.Clone(damagePicture);
+            var modalParameters = new ModalParameters();
+            modalParameters.Add(nameof(DamagePictureModal.DamagePicture), clone);
+            var reference = ModalService.Show<DamagePictureModal>("Bewerk schade foto", modalParameters);
+            var result = await reference.Result;
+
+            if (result.Cancelled)
+                return;
+
+            clone = (DamagePicture) result.Data;
+            Cloner.Update(damagePicture, clone);
+        }
+        
+        private void OnDeletePictureClick(DamagePicture damagePicture)
+        {
+            Damage.Pictures.Remove(damagePicture);
             StateHasChanged();
-        }
-
-        private void OnAddDamageDetailClick()
-        {
-            CurrentDamageDetail = new DamageDetail();
-            DamageDetailContext = new EditContext(CurrentDamageDetail);
-            ShowDamageDetailForm = true;
-        }
-
-        private void OnCancelAddDamageDetailClick()
-        {
-            ShowDamageDetailForm = false;
-        }
-        
-        private void OnValidDetailSubmit()
-        {
-            if(CurrentDamageDetail.Id == null!)
-            {
-                CurrentDamageDetail.Id = Guid.NewGuid().ToString("N");
-                Damage.Details.Add(CurrentDamageDetail);
-            }
-            
-            ShowDamageDetailForm = false;
-        }
-        
-        private async Task OnFileChanged(InputFileChangeEventArgs e)
-        {
-            var resizedImage = await e.File.RequestImageFileAsync(e.File.ContentType, 1024, 1024);
-
-            CurrentDamageDetail.Picture = new File
-            {
-                Data = await resizedImage.ReadStreamAsync(),
-                ContentType = e.File.ContentType,
-                FileName = Path.GetFileName(e.File.Name)
-            };
         }
     }
 }

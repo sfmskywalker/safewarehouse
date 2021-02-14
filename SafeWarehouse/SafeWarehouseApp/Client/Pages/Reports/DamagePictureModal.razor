@@ -1,0 +1,58 @@
+﻿<ModalLayout>
+    <EditForm EditContext="DamageContext" OnValidSubmit="OnValidSubmit" class="space-y-6">
+        <div class="mt-3 sm:mt-0 sm:ml-4">
+            <div class="space-y-6">
+
+                <div>
+                    <label for="damagePictureDescription" class="block mb-1 text-sm font-medium text-gray-700">
+                        Beschrijving
+                    </label>
+                    <InputTextArea @bind-Value="DamagePicture.Description" id="damagePictureDescription" rows="3" class="max-w-lg shadow-sm block w-full focus:ring-pink-500 focus:border-pink-500 sm:text-sm border-gray-300 rounded-md"/>
+                </div>
+
+                <div>
+                    <label class="block mb-1 text-sm font-medium text-gray-700">
+                        Foto
+                    </label>
+                    <div class="relative flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="file-upload" class="cursor-pointer bg-white rounded-md font-medium text-pink-600 hover:text-pink-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-pink-500">
+                                    <span>Upload een afbeelding</span>
+                                    <InputFile OnChange="@OnFileChanged" id="file-upload" class="absolute opacity-0 w-full h-full top-0 left-0"/>
+                                </label>
+                                <p class="pl-1">of sleep naar hier</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                PNG, JPG, GIF tot 100MB
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                @{
+                    var imageDataUrl = DamagePicture.Picture?.GetImageDataUrl();
+                }
+                @if (imageDataUrl != null)
+                {
+                    <div class="mt-2">
+                        <img src="@imageDataUrl" alt=""/>
+                    </div>
+                }
+
+            </div>
+
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-pink-600 text-base font-medium text-white hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    OK
+                </button>
+                <button @onclick="Cancel" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Annuleren
+                </button>
+            </div>
+        </div>
+    </EditForm>
+</ModalLayout>

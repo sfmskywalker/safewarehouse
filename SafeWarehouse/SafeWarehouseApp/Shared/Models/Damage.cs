@@ -1,20 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeWarehouseApp.Shared.Models
 {
-    public class Damage : Document
+    public class Damage
     {
-        public int Number { get; set; }
-        public string Title { get; set; } = default!;
-        public string? Description { get; set; }
-        public string? Location { get; set; }
-        public string? DamageTypeId { get; set; }
-        public string? MaterialId { get; set; }
-        public int? MaterialQuantity { get; set; }
-        public ICollection<DamageDetail> Details { get; set; } = new List<DamageDetail>();
-        public int Left { get; set; }
-        public int Top { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public string Id { get; set; } = default!;
+        [Required] public string Number { get; set; } = default!;
+        [Required] public string DamageTypeId { get; set; } = default!;
+        public IDictionary<string, int> RequiredMaterials { get; set; } = new Dictionary<string, int>();
+        public ICollection<DamagePicture> Pictures { get; set; } = new List<DamagePicture>();
     }
 }

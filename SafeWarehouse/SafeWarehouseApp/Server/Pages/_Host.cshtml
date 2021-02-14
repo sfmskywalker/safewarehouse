@@ -24,7 +24,14 @@
 </head>
 
 <body>
-<component type="typeof(App)" render-mode="@RenderMode.ServerPrerendered"/>
+@if (SafeWarehouseApp.Server.Program.HostingModel == BlazorHostingModel.Server)
+{
+    <component type="typeof(App)" render-mode="@RenderMode.ServerPrerendered"/>
+}
+else
+{
+    <div id="app">Loading...</div>
+}
 
 <div id="blazor-error-ui">
     <environment include="Staging,Production">
@@ -37,7 +44,14 @@
     <a class="dismiss">🗙</a>
 </div>
 
-<script src="_framework/blazor.server.js"></script>
+@if (SafeWarehouseApp.Server.Program.HostingModel == BlazorHostingModel.Server)
+{
+    <script src="_framework/blazor.server.js"></script>
+}
+else
+{
+    <script src="_framework/blazor.webassembly.js"></script>
+}
 <script src="_content/Blazored.Modal/blazored.modal.js"></script>
 <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
