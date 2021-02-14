@@ -18,8 +18,8 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         [Inject] private IModalService ModalService { get; set; } = default!;
         [Inject] private Cloner Cloner { get; set; } = default!;
         private EditContext DamageContext { get; set; } = default!;
-        private ICollection<Material> Materials { get; set; } = new List<Material>();
         private ICollection<DamageType> DamageTypes { get; set; } = new List<DamageType>();
+        private IDictionary<string, Material> MaterialLookup { get; set; } = new Dictionary<string, Material>();
 
         protected override void OnInitialized()
         {
@@ -30,8 +30,8 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         {
             if (firstRender)
             {
-                Materials = (await DbContext.Materials.GetAllAsync()).OrderBy(x => x.Name).ToList();
                 DamageTypes = (await DbContext.DamageTypes.GetAllAsync()).OrderBy(x => x.Title).ToList();
+                MaterialLookup = (await DbContext.Materials.GetAllAsync()).ToDictionary(x => x.Id);
                 StateHasChanged();
             }
         }
@@ -42,6 +42,49 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private async Task OnValidSubmit()
         {
             await Modal.CloseAsync(ModalResult.Ok(Damage));
+        }
+        
+        private async Task OnAddMaterialClick()
+        {
+            var requiredMaterial = new RequiredMaterial();
+            var modalParameters = new ModalParameters();
+            modalParameters.Add(nameof(RequiredMaterialModal.RequiredMaterial), requiredMaterial);
+            var reference = ModalService.Show<RequiredMaterialModal>("Benodigd materiaal", modalParameters);
+            var result = await reference.Result;
+
+            if (result.Cancelled)
+                return;
+
+            requiredMaterial = (RequiredMaterial) result.Data;
+
+            var existingRequiredMaterial = Damage.RequiredMaterials.FirstOrDefault(x => x.MaterialId == requiredMaterial.MaterialId);
+
+            // If we already have an entry with the specified material, simply increase its quantity with the selected amount.
+            if (existingRequiredMaterial != null)
+                existingRequiredMaterial.Quantity += requiredMaterial.Quantity;
+            else
+                Damage.RequiredMaterials.Add(requiredMaterial);
+        }
+        
+        private async Task OnEditMaterialClick(RequiredMaterial requiredMaterial)
+        {
+            var clone = Cloner.Clone(requiredMaterial);
+            var modalParameters = new ModalParameters();
+            modalParameters.Add(nameof(RequiredMaterialModal.RequiredMaterial), clone);
+            var reference = ModalService.Show<RequiredMaterialModal>("Benodigd materiaal", modalParameters);
+            var result = await reference.Result;
+
+            if (result.Cancelled)
+                return;
+
+            clone = (RequiredMaterial) result.Data;
+            Cloner.Update(requiredMaterial, clone);
+        }
+        
+        private void OnDeleteMaterialClick(RequiredMaterial requiredMaterial)
+        {
+            Damage.RequiredMaterials.Remove(requiredMaterial);
+            StateHasChanged();
         }
         
         private async Task OnAddPictureClick()
