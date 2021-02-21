@@ -11,6 +11,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
     {
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
         private ICollection<Report> Reports { get; set; } = new List<Report>();
+        private IDictionary<string, Customer> Customers { get; set; } = new Dictionary<string, Customer>();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -23,7 +24,8 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task FetchDataAsync()
         {
-            Reports = (await DbContext.Reports.GetAllAsync()).OrderBy(x => x.City).ThenBy(x => x.Location).ThenByDescending(x => x.Date).ToList();
+            Customers = (await DbContext.Customers.GetAllAsync()).ToDictionary(x => x.Id);
+            Reports = (await DbContext.Reports.GetAllAsync()).OrderByDescending(x => x.Date).ToList();
         }
 
         private async Task OnDeleteMenuItemClick(Report report)

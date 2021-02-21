@@ -22,7 +22,13 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         {
             RequiredMaterialContext = new EditContext(RequiredMaterial);
         }
-        
+
+        protected override void OnParametersSet()
+        {
+            if (RequiredMaterial.MaterialId is null or "")
+                RequiredMaterial.MaterialId = Materials.FirstOrDefault()?.Id!;
+        }
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -31,9 +37,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
                 StateHasChanged();
             }
         }
-
-        private async Task Close() => await Modal.CloseAsync(ModalResult.Ok(true));
-        private async Task Cancel() => await Modal.CancelAsync();
-        private async Task OnValidSubmit() => await Modal.CloseAsync(ModalResult.Ok(RequiredMaterial));
+        
+        private async Task OnValidSubmit() => await Modal.CloseAsync();
     }
 }

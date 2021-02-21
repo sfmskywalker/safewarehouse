@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -12,37 +14,44 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 {
     partial class Create
     {
-        private Report Report { get; } = CreateReport();
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
-        private string? SelectedImageUrl => Report.Schematic.GetImageDataUrl();
 
         private async Task OnFileChanged(InputFileChangeEventArgs e)
         {
+            var image = await e.File.ReadStreamAsync();
             var resizedImage = await e.File.RequestImageFileAsync(e.File.ContentType, 1024, 1024);
+            var fileName = Path.GetFileName(e.File.Name);
 
-            Report.Schematic = new File
+            var originalSchematic = new File
             {
+                Id = Guid.NewGuid().ToString("N"),
+                Data = image,
+                ContentType = e.File.ContentType,
+                FileName = fileName
+            };
+
+            var resizedSchematic = new File
+            {
+                Id = Guid.NewGuid().ToString("N"),
                 Data = await resizedImage.ReadStreamAsync(),
                 ContentType = e.File.ContentType,
-                FileName = Path.GetFileName(e.File.Name)
+                FileName = $"{Path.GetFileNameWithoutExtension(fileName)}-resized{Path.GetExtension(fileName)}"
             };
-        }
-
-        private static Report CreateReport() => new()
-        {
-            Id = Guid.NewGuid().ToString("N"),
-            Title = "Concept",
-            Date = DateTime.Now
-        };
-
-        private async Task OnNextButtonClick()
-        {
-            if (Report.Schematic.FileName == null!)
-                return;
             
-            await DbContext.Reports.PutAsync(Report);
-            NavigationManager.NavigateTo($"reports/{Report.Id}");
+            var report = new Report
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Date = DateTime.Now,
+                OriginalSchematicId = originalSchematic.Id,
+                SchematicPhotoId = resizedSchematic.Id,
+            };
+
+            await DbContext.Files.PutAsync(originalSchematic);
+            await DbContext.Files.PutAsync(resizedSchematic);
+            await DbContext.Reports.PutAsync(report);
+            
+            NavigationManager.NavigateTo($"reports/{report.Id}");
         }
     }
 }

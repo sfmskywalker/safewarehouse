@@ -30,8 +30,9 @@ namespace SafeWarehouseApp.Server
             services.AddScoped<SafeWarehouseContext>();
             services.AddBlazoredModal();
             services.AddAutoMapper(x => x.AddMaps(typeof(Program)));
-            services.AddSingleton<Cloner>();
-            
+            services.AddScoped<PdfGenerator>();
+            services.AddScoped<FileDownloader>();
+
             if (Program.HostingModel == BlazorHostingModel.Server)
             {
                 services.AddServerSideBlazor(options =>

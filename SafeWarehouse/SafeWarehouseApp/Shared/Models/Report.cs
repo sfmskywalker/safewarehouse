@@ -1,27 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using SafeWarehouseApp.Shared.Extensions;
 
 namespace SafeWarehouseApp.Shared.Models
 {
     public class Report : Document
     {
-        public string Title { get; set; } = default!;
-        public string? Location { get; set; }
+        public string? CustomerId { get; set; } = default!;
         public DateTime Date { get; set; }
-        public string? City { get; set; }
+        public DateTime? NextExaminationBefore { get; set; }
         public string? Remarks { get; set; }
-        public File Schematic { get; set; } = new();
-        public File? Photo { get; set; }
+        public string OriginalSchematicId { get; set; } = default!;
+        public string SchematicPhotoId { get; set; } = default!;
+        public string? PhotoId { get; set; }
         public IList<Location> Locations { get; set; } = new List<Location>();
 
-        public string GetLocationNotation(Location location)
+        public void UpdateLocationNumbers()
         {
-            var index = Locations.IndexOf(location);
-            var letter = Helpers.IntToLetters(index + 1);
-            var damageCount = location.Damages.Count;
-
-            return damageCount == 0 ? letter : $"{letter} ({damageCount})";
+            var currentIndex = 0;
+            foreach (var location in Locations)
+                location.Number = ++currentIndex;
         }
     }
 }

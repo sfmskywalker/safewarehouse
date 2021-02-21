@@ -3,10 +3,10 @@
         <div class="mt-3 sm:mt-0 sm:ml-4">
             <div class="space-y-6">
                 <div>
-                    <label for="locationNumber" class="block mb-1 text-sm font-medium text-gray-700">
-                        Locatienummer
-                    </label>
-                    <InputNumber @bind-Value="Location.Number" id="locationNumber" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"/>
+                    <p class="block mb-1 text-sm font-medium text-gray-700">
+                        Nummer: <span class="mt-1 max-w-2xl text-sm text-gray-500">@Location.Number</span> 
+                    </p>
+                    
                 </div>
                 <div>
                     <label for="description" class="block mb-1 text-sm font-medium text-gray-700">
@@ -26,7 +26,7 @@
                             <ul class="divide-y divide-gray-200">
                                 @foreach (var damage in Location.Damages)
                                 {
-                                    var damageTitle = DamageTypeLookup.ContainsKey(damage.DamageTypeId) ? DamageTypeLookup[damage.DamageTypeId].Title : "(verwijderd)";
+                                    var damageTitle = damage.DamageTypeId != null! && DamageTypeLookup.ContainsKey(damage.DamageTypeId) ? DamageTypeLookup[damage.DamageTypeId].Title : "(verwijderd)";
                                     <li>
                                         <div class="flex items-center px-4 sm:px-6">
                                             <a href="#" @onclick="@(() => OnEditDamageClick(damage))" @onclick:preventDefault class="flex-1 my-4">
@@ -93,9 +93,6 @@
             <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                 <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-pink-600 text-base font-medium text-white hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 sm:ml-3 sm:w-auto sm:text-sm">
                     OK
-                </button>
-                <button @onclick="Cancel" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 sm:mt-0 sm:w-auto sm:text-sm">
-                    Annuleren
                 </button>
                 <div class="flex-1"></div>
                 <button @onclick="@OnDeleteLocationClick" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-red-600 text-base text-white font-medium hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:w-auto sm:text-sm">

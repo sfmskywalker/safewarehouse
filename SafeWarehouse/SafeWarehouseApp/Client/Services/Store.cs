@@ -10,6 +10,7 @@ namespace SafeWarehouseApp.Client.Services
     {
         private readonly string _name;
         private readonly Func<ValueTask<IJSObjectReference>> _moduleProvider;
+        
         public Store(string name, Func<ValueTask<IJSObjectReference>> moduleProvider)
         {
             _name = name;

@@ -11,5 +11,12 @@ namespace SafeWarehouseApp.Shared.Models
         public int Top { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
+
+        public void UpdateDamageNumbers()
+        {
+            var currentIndex = 0;
+            foreach (var damage in Damages)
+                damage.Number = ++currentIndex;
+        }
     }
 }

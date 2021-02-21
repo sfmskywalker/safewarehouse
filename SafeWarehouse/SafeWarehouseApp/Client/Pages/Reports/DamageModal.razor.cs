@@ -16,14 +16,15 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         [Parameter] public Damage Damage { get; set; } = new();
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
         [Inject] private IModalService ModalService { get; set; } = default!;
-        [Inject] private Cloner Cloner { get; set; } = default!;
         private EditContext DamageContext { get; set; } = default!;
         private ICollection<DamageType> DamageTypes { get; set; } = new List<DamageType>();
+        private IDictionary<string, File> DamagePictureFiles { get; set; } = new Dictionary<string, File>();
         private IDictionary<string, Material> MaterialLookup { get; set; } = new Dictionary<string, Material>();
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             DamageContext = new EditContext(Damage);
+            await LoadDamagePicturesAsync();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -36,8 +37,11 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             }
         }
 
-        private async Task Close() => await Modal.CloseAsync(ModalResult.Ok(true));
-        private async Task Cancel() => await Modal.CancelAsync();
+        private async Task LoadDamagePicturesAsync()
+        {
+            foreach (var damagePicture in Damage.Pictures.Where(x => x.PictureId is not null and not "")) 
+                DamagePictureFiles[damagePicture.PictureId!] = await DbContext.Files.GetAsync(damagePicture.PictureId);
+        }
 
         private async Task OnValidSubmit()
         {
@@ -46,39 +50,33 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         
         private async Task OnAddMaterialClick()
         {
-            var requiredMaterial = new RequiredMaterial();
-            var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(RequiredMaterialModal.RequiredMaterial), requiredMaterial);
-            var reference = ModalService.Show<RequiredMaterialModal>("Benodigd materiaal", modalParameters);
-            var result = await reference.Result;
+            var requiredMaterial = new RequiredMaterial
+            {
+                MaterialId = MaterialLookup.Keys.FirstOrDefault()!
+            };
 
-            if (result.Cancelled)
-                return;
-
-            requiredMaterial = (RequiredMaterial) result.Data;
-
+            await OnEditMaterialClick(requiredMaterial);
             var existingRequiredMaterial = Damage.RequiredMaterials.FirstOrDefault(x => x.MaterialId == requiredMaterial.MaterialId);
 
             // If we already have an entry with the specified material, simply increase its quantity with the selected amount.
             if (existingRequiredMaterial != null)
+            {
                 existingRequiredMaterial.Quantity += requiredMaterial.Quantity;
+                requiredMaterial = existingRequiredMaterial;
+            }
             else
                 Damage.RequiredMaterials.Add(requiredMaterial);
+
+            if (requiredMaterial.Quantity <= 0) 
+                Damage.RequiredMaterials.Remove(requiredMaterial);
         }
         
         private async Task OnEditMaterialClick(RequiredMaterial requiredMaterial)
         {
-            var clone = Cloner.Clone(requiredMaterial);
             var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(RequiredMaterialModal.RequiredMaterial), clone);
+            modalParameters.Add(nameof(RequiredMaterialModal.RequiredMaterial), requiredMaterial);
             var reference = ModalService.Show<RequiredMaterialModal>("Benodigd materiaal", modalParameters);
-            var result = await reference.Result;
-
-            if (result.Cancelled)
-                return;
-
-            clone = (RequiredMaterial) result.Data;
-            Cloner.Update(requiredMaterial, clone);
+            await reference.Result;
         }
         
         private void OnDeleteMaterialClick(RequiredMaterial requiredMaterial)
@@ -89,37 +87,27 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         
         private async Task OnAddPictureClick()
         {
-            var damagePicture = new DamagePicture();
-            var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(DamagePictureModal.DamagePicture), damagePicture);
-            var reference = ModalService.Show<DamagePictureModal>("Nieuwe schade foto", modalParameters);
-            var result = await reference.Result;
-
-            if (result.Cancelled)
-                return;
-
-            damagePicture = (DamagePicture) result.Data;
+            var damagePicture = new DamagePicture
+            {
+                Number = Damage.Pictures.Count + 1
+            };
             Damage.Pictures.Add(damagePicture);
+            await OnEditPictureClick(damagePicture);
         }
         
         private async Task OnEditPictureClick(DamagePicture damagePicture)
         {
-            var clone = Cloner.Clone(damagePicture);
             var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(DamagePictureModal.DamagePicture), clone);
-            var reference = ModalService.Show<DamagePictureModal>("Bewerk schade foto", modalParameters);
-            var result = await reference.Result;
-
-            if (result.Cancelled)
-                return;
-
-            clone = (DamagePicture) result.Data;
-            Cloner.Update(damagePicture, clone);
+            modalParameters.Add(nameof(DamagePictureModal.DamagePicture), damagePicture);
+            var reference = ModalService.Show<DamagePictureModal>("Schade foto", modalParameters);
+            await reference.Result;
+            await LoadDamagePicturesAsync();
         }
         
         private void OnDeletePictureClick(DamagePicture damagePicture)
         {
             Damage.Pictures.Remove(damagePicture);
+            Damage.UpdatePictureNumbers();
             StateHasChanged();
         }
     }

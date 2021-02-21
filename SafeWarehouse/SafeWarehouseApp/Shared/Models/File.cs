@@ -1,6 +1,6 @@
 ﻿namespace SafeWarehouseApp.Shared.Models
 {
-    public class File
+    public class File : Document
     {
         public string Data { get; set; } = default!;
         public string FileName { get; set; } = default!;

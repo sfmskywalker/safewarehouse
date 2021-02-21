@@ -2,7 +2,8 @@
 {
     public class DamagePicture
     {
-        public File? Picture { get; set; }
+        public int Number { get; set; }
+        public string? PictureId { get; set; }
         public string Description { get; set; } = default!;
     }
 }

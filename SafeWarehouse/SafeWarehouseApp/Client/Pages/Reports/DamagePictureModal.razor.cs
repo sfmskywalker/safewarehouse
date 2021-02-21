@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.Modal.Services;
@@ -17,30 +18,35 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         [Parameter] public DamagePicture DamagePicture { get; set; } = new();
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
         private EditContext DamageContext { get; set; } = default!;
+        private File? Picture { get; set; }
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             DamageContext = new EditContext(DamagePicture);
+            Picture = DamagePicture.PictureId is not null and not "" ? await DbContext.Files.GetAsync(DamagePicture.PictureId) : default;
         }
 
-        private async Task Close() => await Modal.CloseAsync(ModalResult.Ok(true));
-        private async Task Cancel() => await Modal.CancelAsync();
+        private async Task OnValidSubmit() => await Modal.CloseAsync();
 
-        private async Task OnValidSubmit()
-        {
-            await Modal.CloseAsync(ModalResult.Ok(DamagePicture));
-        }
-        
         private async Task OnFileChanged(InputFileChangeEventArgs e)
         {
             var resizedImage = await e.File.RequestImageFileAsync(e.File.ContentType, 1024, 1024);
 
-            DamagePicture.Picture = new File
+            var picture = new File
             {
+                Id = Guid.NewGuid().ToString("N"),
                 Data = await resizedImage.ReadStreamAsync(),
                 ContentType = e.File.ContentType,
                 FileName = Path.GetFileName(e.File.Name)
             };
+
+            await DbContext.Files.PutAsync(picture);
+
+            if (DamagePicture.PictureId is not null and not "")
+                await DbContext.Files.DeleteAsync(DamagePicture.PictureId);
+
+            DamagePicture.PictureId = picture.Id;
+            Picture = picture;
         }
     }
 }

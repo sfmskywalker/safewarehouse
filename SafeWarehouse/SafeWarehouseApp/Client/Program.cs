@@ -22,7 +22,8 @@ namespace SafeWarehouseApp.Client
             services.AddScoped<SafeWarehouseContext>();
             services.AddBlazoredModal();
             services.AddAutoMapper(x => x.AddMaps(typeof(Program)));
-            services.AddSingleton<Cloner>();
+            services.AddScoped<PdfGenerator>();
+            services.AddScoped<FileDownloader>();
 
             await builder.Build().RunAsync();
         }

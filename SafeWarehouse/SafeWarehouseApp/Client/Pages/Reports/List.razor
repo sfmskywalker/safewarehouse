@@ -34,13 +34,15 @@
                 @foreach (var report in Reports)
                 {
                     var dateString = report.Date.ToString("dd/MM/yyyy");
+                    var customer = report.CustomerId is not null and not "" && Customers.ContainsKey(report.CustomerId) ? Customers[report.CustomerId] : default;
+                    var title = customer?.CompanyName ?? "Nieuw Rapport";
                     <li>
                         <a href="#" class="group flex items-center justify-between px-4 py-4 hover:bg-gray-50 sm:px-6">
                             <span class="flex items-center truncate space-x-3">
                                 <span class="w-2.5 h-2.5 flex-shrink-0 rounded-full bg-pink-600" aria-hidden="true"></span>
                                 <span class="font-medium truncate text-sm leading-6">
-                                    @report.Title
-                                    <span class="truncate font-normal text-gray-500">@(string.IsNullOrWhiteSpace(report.Location) ? dateString : $"{report.Location}, {dateString}")</span>
+                                    @title
+                                    <span class="truncate font-normal text-gray-500">@dateString</span>
                                 </span>
                             </span>
                             <svg class="ml-4 h-5 w-5 text-gray-400 group-hover:text-gray-500" x-description="Heroicon name: chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -60,9 +62,6 @@
                         <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <span class="lg:pl-2">Rapport</span>
                         </th>
-                        <th class="hidden md:table-cell px-6 py-3 border-b border-gray-200 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Plaats
-                                                </th>
                         <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Datum
                         </th>
@@ -73,15 +72,14 @@
                     @foreach (var report in Reports)
                     {
                         var editUrl = $"reports/{report.Id}";
+                        var customer = report.CustomerId is not null and not "" && Customers.ContainsKey(report.CustomerId) ? Customers[report.CustomerId] : default;
+                        var title = customer?.CompanyName ?? "Nieuw Rapport";
                         <tr>
                             <td class="px-6 py-3 max-w-0 w-full whitespace-nowrap text-sm font-medium text-gray-900">
                                 <a href="@editUrl" class="truncate hover:text-gray-600">
-                                    @report.Title
+                                    @title
                                 </a>
                             </td>
-                            <td class="hidden md:table-cell px-6 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
-                                                            @(string.IsNullOrWhiteSpace(report.Location) ? "-" : report.Location)
-                                                        </td>
                             <td class="px-6 py-3 text-sm text-gray-500 font-medium">
                                 @report.Date.ToString("dd/MM/yyyy")
                             </td>

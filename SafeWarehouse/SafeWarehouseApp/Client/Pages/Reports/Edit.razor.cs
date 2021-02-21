@@ -22,21 +22,26 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
         [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
         [Inject] private IModalService ModalService { get; set; } = default!;
-        [Inject] private Cloner Cloner { get; set; } = default!;
+        [Inject] private PdfGenerator PdfGenerator { get; set; } = default!;
+        [Inject] private FileDownloader FileDownloader { get; set; } = default!;
         private Report Report { get; set; } = new();
         private EditContext ReportContext { get; set; } = default!;
         private bool HasRendered { get; set; }
         private string CurrentTab { get; set; } = "Designer";
         private IDictionary<string, DamageType> DamageTypes { get; set; } = new Dictionary<string, DamageType>();
+        private IDictionary<string, Customer> Customers { get; set; } = new Dictionary<string, Customer>();
+        private Customer? Customer => Report.CustomerId is not null && Customers.ContainsKey(Report.CustomerId) ? Customers[Report.CustomerId] : default;
+        private File Schematic { get; set; } = default!;
+        private File? Photo { get; set; }
         private IJSObjectReference DesignerModule { get; set; } = default!;
         private static Func<string, int, int, int, int, Task> _updateDamageSpriteAsync = default!;
 
         [JSInvokable]
         public static async Task UpdateDamageSpriteAsyncCaller(string id, int left, int top, int width, int height) => await _updateDamageSpriteAsync.Invoke(id, left, top, width, height);
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            SetReport(Report);
+            await SetReportAsync(Report);
             _updateDamageSpriteAsync = UpdateDamageSpriteAsync;
         }
 
@@ -52,6 +57,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             {
                 await LoadReportAsync(Id);
                 DamageTypes = (await DbContext.DamageTypes.GetAllAsync()).ToDictionary(x => x.Id);
+                Customers = (await DbContext.Customers.GetAllAsync()).ToDictionary(x => x.Id);
                 await InitializeDesignerAsync();
                 HasRendered = true;
                 StateHasChanged();
@@ -61,10 +67,10 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private async Task LoadReportAsync(string id)
         {
             var report = await DbContext.Reports.GetAsync(id);
-            SetReport(report);
+            await SetReportAsync(report);
         }
 
-        private void SetReport(Report report)
+        private async Task SetReportAsync(Report report)
         {
             if (ReportContext != null!)
                 ReportContext.OnFieldChanged -= OnReportFieldChanged;
@@ -72,6 +78,10 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             ReportContext = new EditContext(report);
             ReportContext.OnFieldChanged += OnReportFieldChanged;
             Report = report;
+            Schematic = await DbContext.Files.GetAsync(Report.SchematicPhotoId);
+
+            if (Report.PhotoId is not null and not "")
+                Photo = await DbContext.Files.GetAsync(Report.PhotoId);
         }
 
         private async Task InitializeDesignerAsync()
@@ -90,11 +100,9 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             await SaveChangesAsync();
         }
 
-        private string GetDamageTypeText(string? damageTypeId) => damageTypeId != null && DamageTypes.ContainsKey(damageTypeId) ? DamageTypes[damageTypeId].Title : "";
-
         private async Task SaveChangesAsync() => await DbContext.Reports.PutAsync(Report);
 
-        private async Task BeginAddDamage(int left = 150, int top = 150)
+        private async Task BeginAddLocation(int left = 150, int top = 150)
         {
             var location = new Location
             {
@@ -106,17 +114,9 @@ namespace SafeWarehouseApp.Client.Pages.Reports
                 Height = 100
             };
 
-            var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(LocationModal.Location), location);
-            var reference = ModalService.Show<LocationModal>("Nieuwe locatie", modalParameters);
-            var result = await reference.Result;
-
-            if (result.Cancelled)
-                return;
-
-            location = (Location) result.Data;
             Report.Locations.Add(location);
             await SaveChangesAsync();
+            await OnEditLocationClick(location);
         }
 
         private void ChangeTab(string tab)
@@ -126,7 +126,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task OnCanvasDoubleClick(MouseEventArgs args)
         {
-            await BeginAddDamage((int) (args.OffsetX - 50), (int) (args.OffsetY - 50));
+            await BeginAddLocation((int) (args.OffsetX - 50), (int) (args.OffsetY - 50));
         }
 
         private DateTime _lastTap = DateTime.MinValue;
@@ -139,40 +139,24 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             _lastTap = DateTime.Now;
 
             if (delta < TimeSpan.FromMilliseconds(600) && delta > TimeSpan.Zero)
-                await BeginAddDamage((int) args.ChangedTouches[0].ClientX, (int) args.ChangedTouches[0].ClientY);
+                await BeginAddLocation((int) args.ChangedTouches[0].ClientX, (int) args.ChangedTouches[0].ClientY);
         }
 
-        private Task OnAddDamageClick() => BeginAddDamage();
+        private Task OnAddDamageClick() => BeginAddLocation();
 
         private async Task OnEditLocationClick(Location location)
         {
-            var clone = Cloner.Clone(location);
             var modalParameters = new ModalParameters();
-            modalParameters.Add(nameof(LocationModal.Location), clone);
-            var reference = ModalService.Show<LocationModal>("Bewerk locatie", modalParameters);
+            modalParameters.Add(nameof(LocationModal.Location), location);
+            var reference = ModalService.Show<LocationModal>("Locatie", modalParameters);
             var result = await reference.Result;
+            var action = (string) result.Data;
 
-            if (result.Cancelled)
-                return;
-
-            clone = (Location?) result.Data;
-
-            if (clone == null)
+            if (action == "Delete")
+            {
                 Report.Locations.Remove(location);
-            else
-                Cloner.Update(clone, location);
-            
-            await SaveChangesAsync();
-        }
-
-        private async Task OnDeleteLocationClick(Location location)
-        {
-            Report.Locations.Remove(location);
-
-            var index = 0;
-
-            foreach (var d in Report.Locations)
-                d.Number = ++index;
+                Report.UpdateLocationNumbers();
+            }
 
             await SaveChangesAsync();
         }
@@ -182,13 +166,36 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private async Task OnGeneralPhotoChanged(InputFileChangeEventArgs args)
         {
             var resizedImage = await args.File.RequestImageFileAsync(args.File.ContentType, 1024, 1024);
-
-            Report.Photo = new File
+            
+            var newPhoto = new File
             {
+                Id = Guid.NewGuid().ToString("N"),
                 Data = await resizedImage.ReadStreamAsync(),
                 ContentType = args.File.ContentType,
                 FileName = Path.GetFileName(args.File.Name)
             };
+
+            await DbContext.Files.PutAsync(newPhoto);
+
+            if (Report.PhotoId is not null and not "") 
+                await DbContext.Files.DeleteAsync(Report.PhotoId);
+
+            Report.PhotoId = newPhoto.Id;
+            await SaveChangesAsync();
+        }
+
+        private async Task OnSendClick()
+        {
+            var template = "Hello World!";
+            
+            var model = new
+            {
+                Name = "John Wick"
+            };
+
+            var document = await PdfGenerator.GeneratePdfAsync(template, model);
+            var content = await document.Content.ToByteArrayAsync();
+            await FileDownloader.DownloadFromBytesAsync(new DownloadFromBytesOptions(content, "Rapport.pdf", document.Meta.ContentType));
         }
     }
 }
