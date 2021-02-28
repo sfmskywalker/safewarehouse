@@ -31,7 +31,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private IDictionary<string, DamageType> DamageTypes { get; set; } = new Dictionary<string, DamageType>();
         private IDictionary<string, Customer> Customers { get; set; } = new Dictionary<string, Customer>();
         private Customer? Customer => Report.CustomerId is not null && Customers.ContainsKey(Report.CustomerId) ? Customers[Report.CustomerId] : default;
-        private File Schematic { get; set; } = default!;
+        private File Schematic { get; set; } = new()!;
         private File? Photo { get; set; }
         private IJSObjectReference DesignerModule { get; set; } = default!;
         private static Func<string, int, int, int, int, Task> _updateDamageSpriteAsync = default!;
@@ -41,7 +41,6 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         protected override async Task OnInitializedAsync()
         {
-            await SetReportAsync(Report);
             _updateDamageSpriteAsync = UpdateDamageSpriteAsync;
         }
 
@@ -181,6 +180,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
                 await DbContext.Files.DeleteAsync(Report.PhotoId);
 
             Report.PhotoId = newPhoto.Id;
+            Photo = newPhoto;
             await SaveChangesAsync();
         }
 

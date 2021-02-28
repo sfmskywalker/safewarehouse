@@ -5,64 +5,64 @@ using Microsoft.AspNetCore.Components.Forms;
 using SafeWarehouseApp.Client.Services;
 using SafeWarehouseApp.Shared.Models;
 
-namespace SafeWarehouseApp.Client.Pages.Materials
+namespace SafeWarehouseApp.Client.Pages.Customers
 {
     partial class Edit
     {
         [Parameter] public string? Id { private get; set; }
         [Inject] private SafeWarehouseContext DbContext { get; set; } = default!;
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-        private Material Material { get; set; } = new();
-        private EditContext MaterialContext { get; set; } = default!;
+        private Customer Customer { get; set; } = new();
+        private EditContext CustomerContext { get; set; } = default!;
         private bool HasRendered { get; set; }
 
         protected override void OnInitialized()
         {
-            MaterialContext = new EditContext(Material);
+            CustomerContext = new EditContext(Customer);
         }
 
         protected override async Task OnParametersSetAsync()
         {
             if (HasRendered) 
-                await LoadMaterialAsync();
+                await LoadCustomerAsync();
         }
         
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                await LoadMaterialAsync();
+                await LoadCustomerAsync();
                 HasRendered = true;
                 StateHasChanged();
             }
         }
         
-        private async Task LoadMaterialAsync()
+        private async Task LoadCustomerAsync()
         {
             if (Id is null or "")
                 return;
             
-            var material = await DbContext.Materials.GetAsync(Id);
-            SetMaterial(material);
+            var customer = await DbContext.Customers.GetAsync(Id);
+            SetCustomer(customer);
         }
         
-        private void SetMaterial(Material material)
+        private void SetCustomer(Customer customer)
         {
-            MaterialContext = new EditContext(material);
-            Material = material;
+            CustomerContext = new EditContext(customer);
+            Customer = customer;
         }
 
-        private async Task SaveChangesAsync() => await DbContext.Materials.PutAsync(Material);
+        private async Task SaveChangesAsync() => await DbContext.Customers.PutAsync(Customer);
 
         private async Task OnValidSubmit()
         {
-            if (Material.Id is null or "")
+            if (Customer.Id is null or "")
             {
-                Material.Id = Guid.NewGuid().ToString();
+                Customer.Id = Guid.NewGuid().ToString();
             }
 
             await SaveChangesAsync();
-            NavigationManager.NavigateTo("materials");
+            NavigationManager.NavigateTo("customers");
         }
     }
 }

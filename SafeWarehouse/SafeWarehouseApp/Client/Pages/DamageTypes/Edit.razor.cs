@@ -18,7 +18,7 @@ namespace SafeWarehouseApp.Client.Pages.DamageTypes
 
         protected override void OnInitialized()
         {
-            SetDamageType(DamageType);
+            DamageTypeContext = new EditContext(DamageType);
         }
 
         protected override async Task OnParametersSetAsync()

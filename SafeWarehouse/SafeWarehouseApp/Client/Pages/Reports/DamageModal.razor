@@ -107,7 +107,7 @@
                             <ul class="divide-y divide-gray-200">
                                 @foreach (var damagePicture in Damage.Pictures)
                                 {
-                                    var pictureFile = damagePicture.PictureId is not null and not "" ? DamagePictureFiles[damagePicture.PictureId] : default;
+                                    var pictureFile = damagePicture.PictureId is not null and not "" && DamagePictureFiles.ContainsKey(damagePicture.PictureId) ? DamagePictureFiles[damagePicture.PictureId] : default;
                                     
                                     <li>
                                         <div class="flex items-center px-4 sm:px-6">
