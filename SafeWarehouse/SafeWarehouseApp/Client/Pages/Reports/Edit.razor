@@ -59,7 +59,7 @@
                     {
                         <div class="py-8 xl:py-10">
                             <div @ondblclick="OnCanvasDoubleClick" @ontouchend="OnTouchEnd" class="design-canvas relative overflow-auto">
-                                <img src="@Schematic.GetImageDataUrl()" alt="" class="select-none"/>
+                                <img src="@Schematic.GetImageDataUrl()" alt="" class="select-none" width="800" height="800"/>
                                 @foreach (var location in Report.Locations)
                                 {
                                     <div @ondblclick="@(e => OnEditLocationClick(location))" @ondblclick:stopPropagation="true" class="damage flex flex-col justify-center" style="left: @(location.Left)px; top: @(location.Top)px; width: @(location.Width)px; height: @(location.Height)px;" data-damage-id="@location.Id">

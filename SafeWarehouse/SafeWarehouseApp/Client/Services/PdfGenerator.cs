@@ -20,6 +20,7 @@ namespace SafeWarehouseApp.Client.Services
                     Recipe = Recipe.ChromePdf,
                     Engine = Engine.Handlebars,
                     Content = template,
+                    
                 },
                 Data = model
             };

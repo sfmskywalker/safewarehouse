@@ -25,4 +25,9 @@
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Assets\report.handlebars" />
+    <EmbeddedResource Include="Assets\report.handlebars" />
+  </ItemGroup>
+
 </Project>

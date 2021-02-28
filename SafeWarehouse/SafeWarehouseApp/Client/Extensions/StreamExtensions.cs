@@ -12,5 +12,12 @@ namespace SafeWarehouseApp.Client.Extensions
             await stream.CopyToAsync(ms, cancellationToken);
             return ms.ToArray();
         }
+        
+        public static async Task<string> ReadStringAsync(this Stream stream, CancellationToken cancellationToken = default)
+        {
+            using var reader = new StreamReader(stream);
+            var text = await reader.ReadToEndAsync();
+            return text;
+        }
     }
 }

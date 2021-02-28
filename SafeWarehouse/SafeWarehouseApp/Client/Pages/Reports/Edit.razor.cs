@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Blazored.Modal;
 using Blazored.Modal.Services;
@@ -123,6 +124,12 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             CurrentTab = tab;
         }
 
+        private async Task<string?> GetFileDataAsync(string? fileId)
+        {
+            var file = fileId is not null and not "" ? await DbContext.Files.GetAsync(fileId) : default;
+            return file?.GetImageDataUrl();
+        }
+
         private async Task OnCanvasDoubleClick(MouseEventArgs args)
         {
             await BeginAddLocation((int) (args.OffsetX - 50), (int) (args.OffsetY - 50));
@@ -165,7 +172,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private async Task OnGeneralPhotoChanged(InputFileChangeEventArgs args)
         {
             var resizedImage = await args.File.RequestImageFileAsync(args.File.ContentType, 1024, 1024);
-            
+
             var newPhoto = new File
             {
                 Id = Guid.NewGuid().ToString("N"),
@@ -176,7 +183,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
             await DbContext.Files.PutAsync(newPhoto);
 
-            if (Report.PhotoId is not null and not "") 
+            if (Report.PhotoId is not null and not "")
                 await DbContext.Files.DeleteAsync(Report.PhotoId);
 
             Report.PhotoId = newPhoto.Id;
@@ -186,16 +193,62 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
         private async Task OnSendClick()
         {
-            var template = "Hello World!";
-            
+            var template = await AssetLoader.ReadAssetStream("report.handlebars").ReadStringAsync();
+            var customer = Customers.GetEntry(Report.CustomerId) ?? new Customer();
+            var locations = Report.Locations;
+            var schematic = await DbContext.Files.GetAsync(Report.SchematicPhotoId);
+            var materials = (await DbContext.Materials.GetAllAsync()).ToDictionary(x => x.Id);
+
+            var requiredMaterials = Report.Locations
+                .SelectMany(location => location.Damages.SelectMany(damage => damage.RequiredMaterials))
+                .GroupBy(x => x.MaterialId)
+                .Select(x => new RequiredMaterial
+                {
+                    MaterialId = x.Key,
+                    Quantity = x.Select(y => y.Quantity).Sum()
+                }).ToList();
+
             var model = new
             {
-                Name = "John Wick"
+                CompanyName = customer.CompanyName,
+                ReportDate = DateTime.Now.ToString("dd-MM-yyyy"),
+                ContactName = customer.ContactName,
+                City = customer.City,
+                Address = customer.Address,
+                NextExaminationBefore = Report.NextExaminationBefore?.ToString("dd-MM-yyyy"),
+                Remarks = Report.Remarks,
+                SchematicData = schematic.GetImageDataUrl(),
+                Locations = await Task.WhenAll(locations.Select(async location => new
+                {
+                    Number = location.Number,
+                    Description = location.Description,
+                    Left = location.Left,
+                    Top = location.Top,
+                    Width = location.Width,
+                    Height = location.Height,
+                    Damages = await Task.WhenAll(location.Damages.Select(async damage => new
+                    {
+                        Number = damage.Number,
+                        DamageType = DamageTypes.GetEntry(damage.DamageTypeId)?.Title ?? "(onbekend)",
+                        RequiredMaterials = damage.RequiredMaterials.Select(x => materials.GetEntry(x.MaterialId)).Where(x => x != null).Select(x => x!.Name).ToList(),
+                        DamagePictures = await Task.WhenAll(damage.Pictures.Select(async damagePicture => new
+                        {
+                            Number = damagePicture.Number,
+                            Description = damagePicture.Description,
+                            PictureData = await GetFileDataAsync(damagePicture.PictureId)
+                        }).ToList())
+                    }).ToList())
+                }).ToList()),
+                RequiredMaterials = requiredMaterials.Select(requiredMaterial => new
+                {
+                    Material = materials.GetEntry(requiredMaterial.MaterialId)?.Name ?? "(onbekend)",
+                    Quantity = requiredMaterial.Quantity
+                }).ToList()
             };
 
             var document = await PdfGenerator.GeneratePdfAsync(template, model);
             var content = await document.Content.ToByteArrayAsync();
-            await FileDownloader.DownloadFromBytesAsync(new DownloadFromBytesOptions(content, "Rapport.pdf", document.Meta.ContentType));
+            await FileDownloader.DownloadFromBytesAsync(new DownloadFromBytesOptions(content, "VeiligMagazijn_Rapport.pdf", document.Meta.ContentType));
         }
     }
 }
