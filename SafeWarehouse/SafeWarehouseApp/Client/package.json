@@ -2,7 +2,7 @@
   "scripts": {
     "styles:prod": "cross-env NODE_ENV=production postcss tailwind.css -o wwwroot/styles.css",
     "styles:dev": "cross-env NODE_ENV=development postcss tailwind.css -o wwwroot/styles.css",
-    "build": "copy node_modules\\alpinejs\\dist\\alpine.js wwwroot\\js\\ && copy node_modules\\idb\\build\\iife\\index-min.js wwwroot\\js\\idb.js && copy node_modules\\interactjs\\dist\\interact.min.js wwwroot\\js\\interact.js"
+    "build": "copyfiles -u 1 \"./node_modules/alpinejs/dist/alpine.js\" \"./node_modules/idb/build/iife/index-min.js\" \"./node_modules/interactjs/dist/interact.min.js\" \"./wwwroot/js\""
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.2.1",
@@ -16,6 +16,7 @@
     "tailwindcss": "^2.0.2"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "copyfiles": "^2.4.1"
   }
 }
