@@ -11,7 +11,7 @@ namespace SafeWarehouseApp.Server
 {
     public class Program
     {
-        public static BlazorHostingModel HostingModel = BlazorHostingModel.Server;
+        public static BlazorHostingModel HostingModel = BlazorHostingModel.WebAssembly;
 
         public static void Main(string[] args)
         {

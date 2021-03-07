@@ -30,4 +30,12 @@
     <EmbeddedResource Include="Assets\report.handlebars" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\js\lib" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\idb\build\iife\index-min.js" />
+  </ItemGroup>
+
 </Project>
