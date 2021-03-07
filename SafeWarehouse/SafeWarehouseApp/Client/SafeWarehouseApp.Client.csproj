@@ -30,13 +30,4 @@
     <EmbeddedResource Include="Assets\report.handlebars" />
   </ItemGroup>
 
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="wwwroot\js\alpine.js" />
-    <_ContentIncludedByDefault Remove="wwwroot\js\dbContext.js" />
-    <_ContentIncludedByDefault Remove="wwwroot\js\fileDownloader.js" />
-    <_ContentIncludedByDefault Remove="wwwroot\js\idb.js" />
-    <_ContentIncludedByDefault Remove="wwwroot\js\interact.js" />
-    <_ContentIncludedByDefault Remove="wwwroot\js\reportDamageDesigner.js" />
-  </ItemGroup>
-
 </Project>
