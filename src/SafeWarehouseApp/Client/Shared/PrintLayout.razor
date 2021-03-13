@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+
+<link rel="stylesheet" href="/css/roboto.css"/>
+<link rel="stylesheet" href="/css/tailwind.print.css"/>
+<style>
+    .report, .report td {
+        font-size: 12pt;
+        line-height: 1.5em;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .page {
+        page-break-after: always;
+    }
+
+    .schematic {
+        position: relative;
+    }
+    
+    table {
+        -webkit-column-break-inside: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        page-break-before:auto;
+    }
+
+    .schematic img {
+        max-width: 800px;
+        max-height: 800px;
+    }
+
+    .schematic .location {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 6em;
+        height: 6em;
+        border: 2px solid rgba(219, 39, 119, 1);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.75);
+        touch-action: none;
+        user-select: none;
+    }
+</style>
+
+@Body

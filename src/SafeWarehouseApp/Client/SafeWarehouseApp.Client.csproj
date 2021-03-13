@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="10.1.1" />
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0" />
+        <PackageReference Include="Blazored.Modal" Version="6.0.1" />
+        <PackageReference Include="Handlebars.Net" Version="2.0.5" />
+        <PackageReference Include="IronPdf" Version="2021.1.29" />
+        <PackageReference Include="itext7.pdfhtml" Version="3.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.2" PrivateAssets="all" />
+        <PackageReference Include="PuppeteerExtraSharp" Version="1.2.1" />
+        <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shared\SafeWarehouseApp.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Assets\report.handlebars" />
+        <EmbeddedResource Include="Assets\report.handlebars" />
+        <None Include="wwwroot\css\tailwind.print.css" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\js\lib\html-to-pdf" />
+    </ItemGroup>
+
+</Project>

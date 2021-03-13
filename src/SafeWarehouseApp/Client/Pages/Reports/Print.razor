@@ -1,0 +1,129 @@
+﻿@page "/reports/{id}/print"
+@layout PrintLayout
+
+<div class="report">
+    <!-- Customer & report details -->
+    <div class="page">
+        <div class="flex h-full">
+            <div class="flex flex-col justify-center flex-grow mx-auto max-w-md">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>Bedrijfsnaam:</div>
+                    <div>@Model.Customer.CompanyName</div>
+
+                    <div>Datum</div>
+                    <div>@Model.ReportDate.ToString("dd-MM-yyyy")</div>
+
+                    <div>Contactpersoon:</div>
+                    <div>@Model.Customer.ContactName</div>
+
+                    <div>Plaats:</div>
+                    <div>@Model.Customer.City</div>
+
+                    <div>Adres:</div>
+                    <div>@Model.Customer.Address</div>
+
+                    @if (Model.Report.NextExaminationBefore != null)
+                    {
+                        <div>Volgende keuring vόόr:</div>
+                        <div>@Model.Report.NextExaminationBefore.Value.ToString("dd-MM-yyyy")</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schematic -->
+    <div class="page">
+        <div class="m-10">
+            <div class="schematic">
+                <img src="@Model.Schematic.GetImageDataUrl()" alt=""/>
+                @foreach (var locationModel in Model.Locations)
+                {
+                    var location = locationModel.Location;
+                    <div class="location flex flex-col justify-center" style="left: @(location.Left)px; top: @(location.Top)px; width: @(location.Width)px; height: @(location.Height)px;">
+                        <span class="text-2xl font-semibold text-pink-500 text-center">@location.Number</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Damages overview -->
+    <div class="page p-10">
+        <div class="grid grid-cols-3 gap-4">
+            @foreach (var locationModel in Model.Locations)
+            {
+                foreach (var damageModel in locationModel.Damages)
+                {
+                    foreach (var damagePictureModel in damageModel.Pictures)
+                    {
+                        <div>
+                            <img src="@damagePictureModel.Picture?.GetImageDataUrl()" alt=""/>
+                        </div>
+                        <div>
+                            <ul class="list-disc pl-5">
+                                @foreach (var requiredMaterialModel in damageModel.RequiredMaterials)
+                                {
+                                    <li>@requiredMaterialModel.Name</li>
+                                }
+                            </ul>
+                        </div>
+                        <div>
+                            <p>
+                                <span class="font-bold">@($"{locationModel.Location.Number}.{damageModel.Damage.Number}.{damagePictureModel.DamagePicture.Number}")</span>
+                            </p>
+                            <p>@damageModel.DamageType?.Title</p>
+                            <p>@locationModel.Location.Description</p>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Damages details -->
+    <div class="page p-10">
+        <div class="">
+            @foreach (var locationModel in Model.Locations)
+            {
+                foreach (var damageModel in locationModel.Damages)
+                {
+                    foreach (var damagePictureModel in damageModel.Pictures)
+                    {
+                        <table>
+                            <tr>
+                                <td class="w-2/4">
+                                    <img src="@damagePictureModel.Picture?.GetImageDataUrl()" alt=""/>
+                                </td>
+                                <td class="w-2/4 p-8">
+                                    <p>
+                                        <span class="font-bold">@($"{locationModel.Location.Number}.{damageModel.Damage.Number}.{damagePictureModel.DamagePicture.Number}")</span>
+                                    </p>
+                                    <p>@damageModel.DamageType?.Title</p>
+                                    <p>@locationModel.Location.Description</p>
+                                    <p>@damagePictureModel.DamagePicture.Description</p>
+                                </td>
+                            </tr>
+                        </table>
+                    }
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Damages details -->
+    <div class="page p-10">
+        <div class="mx-auto max-w-full">
+            <div class="grid grid-cols-6 gap-4 text-center">
+                <div class="font-bold col-span-1">Aantal</div>
+                <div class="font-bold col-span-5">Naam</div>
+
+                @foreach (var requiredMaterialModel in Model.RequiredMaterials)
+                {
+                    <div class="col-span-1">@requiredMaterialModel.Quantity</div>
+                    <div class="col-span-5">@requiredMaterialModel.Material?.Name</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

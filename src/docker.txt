@@ -1,0 +1,6 @@
+docker build -t safewarehouseapp -f Dockerfile .
+
+docker tag safewarehouseapp safewarehouseregistry.azurecr.io/safewarehouseapp
+docker push safewarehouseregistry.azurecr.io/safewarehouseapp
+
+docker run -p 4545:80 safewarehouseapp

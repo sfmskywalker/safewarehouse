@@ -1,0 +1,36 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#blazor-error-ui {
+    display: none;
+}
+
+.validation-errors {
+    margin: 1rem;
+}
+
+.validation-errors .validation-message {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgba(220, 38, 38, 1);
+}
+
+.design-canvas img {
+    max-width: 800px;
+    max-height: 800px;
+}
+
+.damage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6em;
+    height: 6em;
+    border: 2px solid rgba(219, 39, 119, 1);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.75);
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+}
