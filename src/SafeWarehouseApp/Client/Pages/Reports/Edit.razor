@@ -26,7 +26,7 @@
             <div class="px-4 sm:px-6 md:px-0">
                 <div class="py-6">
                     <!-- Tabs -->
-                    <div class="lg:hidden">
+                    <div class="md:hidden">
                         <label for="selected-tab" class="sr-only">Selecteer een onderdeel</label>
                         <select @onchange="@(e => ChangeTab((string) e.Value!))" id="selected-tab" name="selected-tab" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm rounded-md">
                             <option selected="" value="Designer">Plattegrond</option>
@@ -34,7 +34,7 @@
                             <option value="Meta">Metagegevens</option>
                         </select>
                     </div>
-                    <div class="hidden lg:block">
+                    <div class="hidden md:block">
                         <div class="border-b border-gray-200">
                             <nav class="-mb-px flex">
                                 <!-- Current: "border-pink-500 text-pink-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
@@ -58,11 +58,11 @@
                     @if (CurrentTab == "Designer")
                     {
                         <div class="py-8 xl:py-10">
-                            <div @ondblclick="OnCanvasDoubleClick" @ontouchend="OnTouchEnd" class="design-canvas relative overflow-auto">
+                            <div class="design-canvas relative overflow-auto">
                                 <img src="@Schematic.GetImageDataUrl()" alt="" class="select-none" width="800" height="800"/>
                                 @foreach (var location in Report.Locations)
                                 {
-                                    <div @ondblclick="@(e => OnEditLocationClick(location))" @ondblclick:stopPropagation="true" class="damage flex flex-col justify-center" style="left: @(location.Left)px; top: @(location.Top)px; width: @(location.Width)px; height: @(location.Height)px;" data-damage-id="@location.Id">
+                                    <div data-location-id="@location.Id" class="damage flex flex-col justify-center" style="left: @(location.Left)px; top: @(location.Top)px; width: @(location.Width)px; height: @(location.Height)px;" data-damage-id="@location.Id">
                                         <span class="text-2xl font-semibold text-pink-500 text-center">@location.Number</span>
                                     </div>
                                 }

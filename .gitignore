@@ -49,4 +49,5 @@ node_modules/
 
 #volatile
 App_Data/
+dist/
 *.db

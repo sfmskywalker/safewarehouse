@@ -33,13 +33,23 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private File? Photo { get; set; }
         private IJSObjectReference DesignerModule { get; set; } = default!;
         private static Func<string, int, int, int, int, Task> _updateDamageSpriteAsync = default!;
+        private static Func<int, int, Task> _doubleTapDesignerAsync = default!;
+        private static Func<string, Task> _doubleTapLocationAsync = default!;
 
         [JSInvokable]
         public static async Task UpdateDamageSpriteAsyncCaller(string id, int left, int top, int width, int height) => await _updateDamageSpriteAsync.Invoke(id, left, top, width, height);
+        
+        [JSInvokable]
+        public static async Task DoubleTapDesignerAsyncCaller(int left, int top) => await _doubleTapDesignerAsync.Invoke(left, top);
+        
+        [JSInvokable]
+        public static async Task DoubleTapLocationAsyncCaller(string locationId) => await _doubleTapLocationAsync.Invoke(locationId);
 
         protected override async Task OnInitializedAsync()
         {
             _updateDamageSpriteAsync = UpdateDamageSpriteAsync;
+            _doubleTapDesignerAsync = DoubleTapDesignerAsync;
+            _doubleTapLocationAsync = DoubleTapLocationAsync;
         }
 
         protected override async Task OnParametersSetAsync()
@@ -64,7 +74,26 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private async Task LoadReportAsync(string id)
         {
             var report = await DbContext.Reports.GetAsync(id);
+            FixUnreachableLocations(report);
             await SetReportAsync(report);
+        }
+
+        private void FixUnreachableLocations(Report report)
+        {
+            foreach (var location in report.Locations)
+            {
+                if (location.Left - location.Width / 2 < 0)
+                    location.Left = 0;
+                
+                if (location.Left - location.Width / 2 > 800)
+                    location.Left = 800;
+                
+                if (location.Top - location.Height / 2 < 0)
+                    location.Top = 0;
+                
+                if (location.Top - location.Height / 2 > 800)
+                    location.Top = 800;
+            }
         }
 
         private async Task SetReportAsync(Report report)
@@ -97,6 +126,17 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             await SaveChangesAsync();
         }
 
+        private async Task DoubleTapDesignerAsync(int left, int top)
+        {
+            await BeginAddLocation(left - 50, top - 50);
+        }
+        
+        private async Task DoubleTapLocationAsync(string locationId)
+        {
+            var location = Report.Locations.First(x => x.Id == locationId);
+            await OnEditLocationClick(location);
+        }
+
         private async Task SaveChangesAsync() => await DbContext.Reports.PutAsync(Report);
 
         private async Task BeginAddLocation(int left = 150, int top = 150)
@@ -113,6 +153,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
 
             Report.Locations.Add(location);
             await SaveChangesAsync();
+            StateHasChanged();
             await OnEditLocationClick(location);
         }
 
@@ -121,31 +162,10 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             CurrentTab = tab;
         }
 
-        private async Task<string?> GetFileDataAsync(string? fileId)
-        {
-            var file = fileId is not null and not "" ? await DbContext.Files.GetAsync(fileId) : default;
-            return file?.GetImageDataUrl();
-        }
-
         private async Task OnCanvasDoubleClick(MouseEventArgs args)
         {
             await BeginAddLocation((int) (args.OffsetX - 50), (int) (args.OffsetY - 50));
         }
-
-        private DateTime _lastTap = DateTime.MinValue;
-
-        private async Task OnTouchEnd(TouchEventArgs args)
-        {
-            var now = DateTime.Now;
-            var delta = now - _lastTap;
-
-            _lastTap = DateTime.Now;
-
-            if (delta < TimeSpan.FromMilliseconds(600) && delta > TimeSpan.Zero)
-                await BeginAddLocation((int) args.ChangedTouches[0].ClientX, (int) args.ChangedTouches[0].ClientY);
-        }
-
-        private Task OnAddDamageClick() => BeginAddLocation();
 
         private async Task OnEditLocationClick(Location location)
         {
@@ -162,6 +182,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             }
 
             await SaveChangesAsync();
+            StateHasChanged();
         }
 
         private async void OnReportFieldChanged(object? sender, FieldChangedEventArgs e) => await SaveChangesAsync();
@@ -186,68 +207,6 @@ namespace SafeWarehouseApp.Client.Pages.Reports
             Report.PhotoId = newPhoto.Id;
             Photo = newPhoto;
             await SaveChangesAsync();
-        }
-
-        private async Task OnSendClick()
-        {
-            var template = await AssetLoader.ReadAssetStream("report.handlebars").ReadStringAsync();
-            var customer = Customers.GetEntry(Report.CustomerId) ?? new Customer();
-            var locations = Report.Locations;
-            var schematic = await DbContext.Files.GetAsync(Report.SchematicPhotoId);
-            var materials = (await DbContext.Materials.GetAllAsync()).ToDictionary(x => x.Id);
-
-            var requiredMaterials = Report.Locations
-                .SelectMany(location => location.Damages.SelectMany(damage => damage.RequiredMaterials))
-                .GroupBy(x => x.MaterialId)
-                .Select(x => new RequiredMaterial
-                {
-                    MaterialId = x.Key,
-                    Quantity = x.Select(y => y.Quantity).Sum()
-                }).ToList();
-
-            var model = new
-            {
-                CompanyName = customer.CompanyName,
-                ReportDate = DateTime.Now.ToString("dd-MM-yyyy"),
-                ContactName = customer.ContactName,
-                City = customer.City,
-                Address = customer.Address,
-                NextExaminationBefore = Report.NextExaminationBefore?.ToString("dd-MM-yyyy"),
-                Remarks = Report.Remarks,
-                SchematicData = schematic.GetImageDataUrl(),
-                Locations = await Task.WhenAll(locations.Select(async location => new
-                {
-                    Number = location.Number,
-                    Description = location.Description,
-                    Left = location.Left,
-                    Top = location.Top,
-                    Width = location.Width,
-                    Height = location.Height,
-                    Damages = await Task.WhenAll(location.Damages.Select(async damage => new
-                    {
-                        Number = damage.Number,
-                        DamageType = DamageTypes.GetEntry(damage.DamageTypeId)?.Title ?? "(onbekend)",
-                        RequiredMaterials = damage.RequiredMaterials.Select(x => materials.GetEntry(x.MaterialId)).Where(x => x != null).Select(x => x!.Name).ToList(),
-                        DamagePictures = await Task.WhenAll(damage.Pictures.Select(async damagePicture => new
-                        {
-                            Number = damagePicture.Number,
-                            Description = damagePicture.Description,
-                            PictureData = await GetFileDataAsync(damagePicture.PictureId)
-                        }).ToList())
-                    }).ToList())
-                }).ToList()),
-                RequiredMaterials = requiredMaterials.Select(requiredMaterial => new
-                {
-                    Material = materials.GetEntry(requiredMaterial.MaterialId)?.Name ?? "(onbekend)",
-                    Quantity = requiredMaterial.Quantity
-                }).ToList()
-            };
-
-            //await Printer.PrintAsync();
-
-            // var document = await PdfGenerator.GeneratePdfAsync(template, model);
-            // var content = await document.Content.ToByteArrayAsync();
-            // await FileDownloader.DownloadFromBytesAsync(new DownloadFromBytesOptions(content, "VeiligMagazijn_Rapport.pdf", "application/pdf"));
         }
     }
 }
