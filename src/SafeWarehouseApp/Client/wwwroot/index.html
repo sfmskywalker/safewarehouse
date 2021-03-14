@@ -11,7 +11,7 @@
     <link href="SafeWarehouseApp.Client.styles.css" rel="stylesheet"/>
     <link href="manifest.json" rel="manifest"/>
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
-    <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
+    <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet"/>
     <script src="js/lib/alpinejs/dist/alpine.js"></script>
     <script src="js/lib/idb/build/iife/index-min.js"></script>
     <script src="js/lib/interactjs/dist/interact.min.js"></script>
@@ -19,7 +19,16 @@
 </head>
 
 <body>
-<div id="app">Loading...</div>
+<div id="app">
+    <div class="w-full h-full fixed block top-0 left-0 bg-white opacity-75 z-50">
+      <span class="text-rose-500 top-1/2 my-0 mx-auto block relative w-12" style="top: 50%;">
+          <svg class="h-20 w-20 animate-spin" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <circle
+                  cx="12" cy="12" r="3"/>  <line x1="12" y1="21" x2="12" y2="21.01"/>  <line x1="3" y1="9" x2="3" y2="9.01"/>  <line x1="21" y1="9" x2="21" y2="9.01"/>  <path d="M8 20.1a9 9 0 0 1 -5 -7.1"/>  <path
+                  d="M16 20.1a9 9 0 0 0 5 -7.1"/>  <path d="M6.2 5a9 9 0 0 1 11.4 0"/></svg>
+          <span class="text-gray-300">Versie&nbsp;0.1</span>
+      </span>
+    </div>
+</div>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

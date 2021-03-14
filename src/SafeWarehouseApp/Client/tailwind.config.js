@@ -5,6 +5,7 @@ module.exports = {
     purge: [
         './**/*.razor',
         './**/*.cshtml',
+        './**/*.html',
     ],
     theme: {
         extend: {

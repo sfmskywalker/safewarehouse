@@ -1842,10 +1842,8 @@ select {
 }
 
 .design-canvas img {
-  width: unset;
-  height: unset;
-  max-width: unset;
-  max-height: unset;
+  max-width: 800px;
+  max-height: 800px;
 }
 
 .damage {
@@ -1955,8 +1953,16 @@ select {
 }
 
 @media (min-width: 768px) {
+  .md\:block {
+    display: block;
+  }
+
   .md\:grid {
     display: grid;
+  }
+
+  .md\:hidden {
+    display: none;
   }
 
   .md\:max-w-xl {
@@ -1988,10 +1994,6 @@ select {
 }
 
 @media (min-width: 1024px) {
-  .lg\:block {
-    display: block;
-  }
-
   .lg\:flex {
     display: flex;
   }

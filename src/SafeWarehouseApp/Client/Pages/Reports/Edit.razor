@@ -62,7 +62,7 @@
                                 <img src="@Schematic.GetImageDataUrl()" alt="" class="select-none" width="800" height="800"/>
                                 @foreach (var location in Report.Locations)
                                 {
-                                    <div data-location-id="@location.Id" class="damage flex flex-col justify-center" style="left: @(location.Left)px; top: @(location.Top)px; width: @(location.Width)px; height: @(location.Height)px;" data-damage-id="@location.Id">
+                                    <div data-location-id="@location.Id" class="damage flex flex-col justify-center" style="left: @(location.Left)px; top: @(location.Top)px; width: @(location.Width)px; height: @(location.Height)px;">
                                         <span class="text-2xl font-semibold text-pink-500 text-center">@location.Number</span>
                                     </div>
                                 }

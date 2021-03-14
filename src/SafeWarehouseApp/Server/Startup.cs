@@ -31,7 +31,6 @@ namespace SafeWarehouseApp.Server
             services.AddScoped<SafeWarehouseContext>();
             services.AddBlazoredModal();
             services.AddAutoMapper(x => x.AddMaps(typeof(Program)));
-            services.AddScoped<PdfGenerator>();
             services.AddScoped<FileDownloader>();
             services.AddScoped<Printer>();
 

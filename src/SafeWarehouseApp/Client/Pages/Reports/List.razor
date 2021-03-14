@@ -34,11 +34,12 @@
 
                 @foreach (var report in Reports)
                 {
+                    var editUrl = $"reports/{report.Id}";
                     var dateString = report.Date.ToString("dd/MM/yyyy");
                     var customer = report.CustomerId is not null and not "" && Customers.ContainsKey(report.CustomerId) ? Customers[report.CustomerId] : default;
                     var title = customer?.CompanyName ?? "Nieuw Rapport";
                     <li>
-                        <a href="#" class="group flex items-center justify-between px-4 py-4 hover:bg-gray-50 sm:px-6">
+                        <a href="@editUrl" class="group flex items-center justify-between px-4 py-4 hover:bg-gray-50 sm:px-6">
                             <span class="flex items-center truncate space-x-3">
                                 <span class="w-2.5 h-2.5 flex-shrink-0 rounded-full bg-pink-600" aria-hidden="true"></span>
                                 <span class="font-medium truncate text-sm leading-6">

@@ -18,7 +18,7 @@ namespace SafeWarehouseApp.Client.Pages.Reports
         private async Task OnFileChanged(InputFileChangeEventArgs e)
         {
             var image = await e.File.ReadStreamAsync();
-            var resizedImage = await e.File.RequestImageFileAsync(e.File.ContentType, 600, 600);
+            var resizedImage = await e.File.RequestImageFileAsync(e.File.ContentType, 800, 800);
             var fileName = Path.GetFileName(e.File.Name);
 
             var originalSchematic = new File
